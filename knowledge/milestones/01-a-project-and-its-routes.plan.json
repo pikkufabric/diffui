@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "milestone": "01-a-project-and-its-routes",
+  "description": "A project exists, belongs to an organisation, seeds its three viewports, and holds the named routes it tracks — with the three coverage states visible and another organisation refused.",
+  "covers": [
+    {
+      "note": "knowledge/milestones/01-a-project-and-its-routes.md",
+      "hash": "abca8d282b13",
+      "complete": true
+    }
+  ],
+  "model": {
+    "kind": "built",
+    "description": "The spine: a project owned by an organisation, the resolutions it captures at, and the screens it tracks. States, shots and comparisons arrive with the milestones that first need them.",
+    "items": [
+      {
+        "table": "project",
+        "description": "One legacy app and the rebuilds chasing it. Belongs to an organisation, never to a user, because tenancy retrofitted onto rows written without it is the migration nobody wants.",
+        "fields": [
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "organization_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "slug",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "baseline_label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "target_label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "updated_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": []
+      },
+      {
+        "table": "viewport",
+        "description": "A declared resolution. Seeded desktop/tablet/mobile on project create, because a project with no resolution cannot accept a shot and making someone invent three first is ceremony.",
+        "fields": [
+          {
+            "name": "viewport_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "width",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "height",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "device_scale_factor",
+            "type": "real",
+            "classification": "internal"
+          },
+          {
+            "name": "sort",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "project_id",
+            "references": "project.project_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsRoutesScenario"
+          }
+        ]
+      },
+      {
+        "table": "route",
+        "description": "A screen, identified by name rather than URL, carrying the legacy path and the new path. legacy_path NULL means nobody has mapped it; legacy_absent means legacy genuinely lacks it — two different claims that a report must never merge.",
+        "fields": [
+          {
+            "name": "route_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "legacy_path",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "new_path",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "legacy_absent",
+            "type": "boolean",
+            "classification": "internal"
+          },
+          {
+            "name": "sort",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "updated_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "project_id",
+            "references": "project.project_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsRoutesScenario"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "kind": "built",
+    "description": "Create and read a project, and declare the routes it tracks. Every one is scoped to the caller's organisation in its permissions field, never in a screen and never in the CLI.",
+    "items": [
+      {
+        "name": "createProject",
+        "description": "Create a project for the organisation the caller belongs to, seeding its three viewports.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "isOrganizationMember"
+      },
+      {
+        "name": "listProjects",
+        "description": "The caller's organisation's projects, and no others.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "isOrganizationMember"
+      },
+      {
+        "name": "getProject",
+        "description": "One project with its viewports, refused to anyone outside its organisation.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "canReachProject"
+      },
+      {
+        "name": "declareRoutes",
+        "description": "Upsert the routes a project tracks, by key — what the CLI's init calls, so the route inventory is reviewable in the consuming repo.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "canReachProject"
+      },
+      {
+        "name": "listRoutes",
+        "description": "A project's routes with their coverage state: legacy has it, legacy lacks it, or nobody has said.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "canReachProject"
+      },
+      {
+        "name": "deleteProject",
+        "description": "Delete a project and everything hanging off it. Exists in this milestone because the cascade is declared here, and a cascade nobody can trigger cannot be proven.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "canReachProject"
+      }
+    ]
+  },
+  "roles": {
+    "kind": "built",
+    "description": "One role. Organisation membership carries tenancy, and Better Auth's organisation plugin brings its own owner/admin/member roles for invitations.",
+    "items": [
+      {
+        "name": "engineer",
+        "description": "Runs a rebuild — declares the screens it tracks, pushes screenshots, reads the report",
+        "app": "app"
+      }
+    ]
+  },
+  "scopes": {
+    "kind": "n/a",
+    "description": "No scopes. Access is organisation membership and project ownership, both resolved from the session against the row being reached."
+  },
+  "ui": {
+    "kind": "built",
+    "description": "Two screens: the projects a person has, and one project's routes with their coverage state.",
+    "items": [
+      {
+        "route": "/app/projects",
+        "description": "The caller's projects, and the form that creates one.",
+        "pass": 1,
+        "scenarios": [
+          "mayaDeclaresARouteScenario"
+        ]
+      },
+      {
+        "route": "/app/projects/$projectId",
+        "description": "One project's routes, each showing whether legacy has the screen, lacks it, or has not been mapped.",
+        "pass": 1,
+        "scenarios": [
+          "mayaDeclaresARouteScenario",
+          "rafiCannotReachAnotherOrgsProjectScenario"
+        ]
+      }
+    ]
+  },
+  "scenarios": {
+    "backend": {
+      "kind": "built",
+      "description": "The route inventory round-trips: declared by key, read back with its coverage state.",
+      "items": [
+        {
+          "feature": "projects",
+          "scenario": "routesRoundTripByKeyScenario",
+          "name": "Routes are declared by key and read back with their coverage state",
+          "pass": 1
+        },
+        {
+          "feature": "projects",
+          "scenario": "deletingAProjectTakesItsRoutesScenario",
+          "fn": "deleteProject",
+          "name": "deletingAProjectTakesItsRoutesScenario",
+          "pass": 1
+        }
+      ]
+    },
+    "browser": {
+      "kind": "built",
+      "description": "Maya does the whole thing through the UI; Rafi is put through it to be refused.",
+      "items": [
+        {
+          "feature": "projects",
+          "scenario": "mayaDeclaresARouteScenario",
+          "name": "maya creates a project, declares a route and sees it listed with its coverage state",
+          "pass": 1
+        },
+        {
+          "feature": "projects",
+          "scenario": "rafiCannotReachAnotherOrgsProjectScenario",
+          "name": "rafi cannot open maya project",
+          "pass": 1
+        }
+      ]
+    },
+    "permission": {
+      "kind": "built",
+      "description": "The refusal that makes organisation scoping real rather than asserted — it rides with the milestone that creates the thing being refused.",
+      "items": [
+        {
+          "feature": "projects",
+          "scenario": "createProjectIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "createProject",
+          "name": "Someone outside the organisation cannot create a project in it",
+          "pass": 2
+        },
+        {
+          "feature": "projects",
+          "scenario": "listProjectsIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "listProjects",
+          "name": "A project list never carries another organisation's projects",
+          "pass": 2
+        },
+        {
+          "feature": "projects",
+          "scenario": "getProjectIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "getProject",
+          "name": "rafi cannot open maya project",
+          "pass": 1
+        },
+        {
+          "feature": "projects",
+          "scenario": "declareRoutesIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "declareRoutes",
+          "name": "Someone outside the organisation cannot declare routes on its project",
+          "pass": 2
+        },
+        {
+          "feature": "projects",
+          "scenario": "listRoutesIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "listRoutes",
+          "name": "Someone outside the organisation cannot read its routes",
+          "pass": 2
+        },
+        {
+          "feature": "projects",
+          "scenario": "deleteProjectIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "deleteProject",
+          "name": "Someone outside the organisation cannot delete its project",
+          "pass": 2
+        }
+      ]
+    }
+  },
+  "deferrals": []
+}

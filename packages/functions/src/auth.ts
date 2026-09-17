@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth'
+import { organization } from 'better-auth/plugins'
 import { ACTOR_SIGN_IN_OPT_IN_ENV, pikkuActor, pikkuBan, pikkuFabric } from '@pikku/better-auth'
 import { pikkuBetterAuth } from '#pikku/auth'
 
@@ -93,7 +94,19 @@ export const auth = pikkuBetterAuth(async ({ kysely, secrets, variables, emailSe
     // the console Users tab can list/impersonate real users without the operator
     // being one of them. Verifies against FABRIC_AUTH_PUBLIC_KEY; missing key
     // disables the endpoint.
+    // organization(): tenancy. A diffui project belongs to an organisation and
+    // never to a user, so that two teams can both track an app called `bb2`
+    // without seeing each other — see
+    // knowledge/decisions/one-app-orgs-for-tenancy.md.
+    //
+    // It brings its own owner/admin/member roles for invitations, and those are
+    // deliberately NOT mirrored as pikku system roles: the app declares one
+    // role (`engineer`), and a parallel set here would be a second answer to
+    // who may do what. Which organisation a caller is acting in comes off the
+    // session as `activeOrganizationId`, which is what every project function's
+    // permission reads.
     plugins: [
+      organization(),
       pikkuActor({
         secret: SCENARIO_ACTOR_SECRET,
         allowSignIn: ALLOW_ACTOR_SIGN_IN,
