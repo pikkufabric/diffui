@@ -14,7 +14,7 @@
  * it as an API scenario against `/api/auth/sign-in/email`, which is where a
  * wrong password is actually refused.
  *
- * `actors.visitor` below is the template's PLACEHOLDER persona. When you replace it
+ * `actors.maya` below is the template's PLACEHOLDER persona. When you replace it
  * with this app's real roles (see AGENTS.md), swap all four references here for your
  * primary role — this scenario must name one literally, because PKU677 requires a
  * browser step's actor to be a literal `actors.<name>`.
@@ -32,9 +32,9 @@ export const signedInActorReachesTheAppScenario = pikkuScenario<
   description: 'The session cookie carries into the browser and the route guard admits it',
   tags: ['scenario', 'auth', 'smoke'],
   func: async (_services, _data, { scenario, actors }) => {
-    if (!actors?.visitor) {
+    if (!actors?.maya) {
       throw new Error(
-        'signedInActorReachesTheAppScenario needs the visitor actor — run via `pikku scenario run <environment>`',
+        'signedInActorReachesTheAppScenario needs the maya actor — run via `pikku scenario run <environment>`',
       )
     }
 
@@ -43,7 +43,7 @@ export const signedInActorReachesTheAppScenario = pikkuScenario<
       'opensPage',
       { path: APP_HOME },
       {
-        actor: actors.visitor,
+        actor: actors.maya,
       },
     )
     if (landed.status != null && landed.status >= 400) {
@@ -58,7 +58,7 @@ export const signedInActorReachesTheAppScenario = pikkuScenario<
       'restsOnPath',
       { path: APP_HOME },
       {
-        actor: actors.visitor,
+        actor: actors.maya,
       },
     )
 
@@ -71,7 +71,7 @@ export const signedInActorReachesTheAppScenario = pikkuScenario<
       'getSession',
       {},
       {
-        actor: actors.visitor,
+        actor: actors.maya,
       },
     )
 

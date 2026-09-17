@@ -7,12 +7,18 @@
       "deploy": true,
       "kind": "ssr",
       "dev": {
-        "command": ["yarn", "dev"],
+        "command": [
+          "yarn",
+          "dev"
+        ],
         "port": 7104,
         "healthPath": "/"
       },
-      "serves": "visitor",
-      "personas": ["visitor"]
+      "serves": "engineer",
+      "personas": [
+        "maya",
+        "rafi"
+      ]
     }
   }
 }

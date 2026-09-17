@@ -11,7 +11,7 @@
  * build. Behaviour scenarios that create, edit or delete belong in their own
  * feature, untagged `smoke`, so the fast gate stays fast and deterministic.
  *
- * `actors.visitor` below is the template's PLACEHOLDER persona. When you replace it
+ * `actors.maya` below is the template's PLACEHOLDER persona. When you replace it
  * with this app's real roles (see AGENTS.md), swap both references here for your
  * primary role — this scenario must name one literally, because PKU677 requires a
  * browser step's actor to be a literal `actors.<name>`.
@@ -23,9 +23,9 @@ export const everyPageLoadsScenario = pikkuScenario<void, { routes: string[] }>(
   description: 'The baseline reliability gate — no page errors for a signed-in user',
   tags: ['scenario', 'pages', 'smoke'],
   func: async (_services, _data, { scenario, actors }) => {
-    if (!actors?.visitor) {
+    if (!actors?.maya) {
       throw new Error(
-        'everyPageLoadsScenario needs the visitor actor — run via `pikku scenario run <environment>`',
+        'everyPageLoadsScenario needs the maya actor — run via `pikku scenario run <environment>`',
       )
     }
     // `repoRoot` is passed even though the schema defaults it: a step's input
@@ -34,7 +34,7 @@ export const everyPageLoadsScenario = pikkuScenario<void, { routes: string[] }>(
       'every page loads without errors',
       'sweepsAllPages',
       { repoRoot: '.' },
-      { actor: actors.visitor },
+      { actor: actors.maya },
     )
     return { routes: swept.routes }
   },

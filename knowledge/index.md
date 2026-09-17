@@ -95,3 +95,11 @@ scenario and the rule it enforces.
 Keep notes concise and current. Do not store secrets or credentials here.
 
 Spec: https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf
+
+<!-- pikku:knowledge-index -->
+- [decisions](decisions/index.md) — a rule that was chosen, and what it rules out
+- [entities](entities/index.md) — a thing the app is about, in the language users use for it
+- [milestones](milestones/index.md) — one buildable piece of the app, with the scenario that proves it
+- [questions](questions/index.md) — something asked and not yet answered
+- [wishlist](wishlist/index.md) — something wanted that nobody has asked to be built
+<!-- /pikku:knowledge-index -->
