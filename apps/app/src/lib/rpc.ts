@@ -1,7 +1,9 @@
+import { PikkuFetch } from '@project/functions-sdk/pikku/pikku-fetch.gen'
 import { PikkuRPC } from '@project/functions-sdk/pikku/pikku-rpc.gen'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequestHeader, getRequestUrl } from '@tanstack/react-start/server'
 import { apiUrl } from './env'
+import { dispatchFetch } from './fabric-dispatch'
 
 /**
  * A PikkuRPC client for code that runs OUTSIDE React — route `beforeLoad` gates, mostly.
@@ -11,8 +13,14 @@ import { apiUrl } from './env'
  * `createIsomorphicFn` keeps each out of the other's bundle. The browser reuses one
  * client. The server builds a fresh one per request and forwards that request's own
  * cookie header — a module-scope singleton there would serve one visitor's session to
- * the next. Deployed, the API answers on the same hostname under `/api`, so the request
- * URL is the base; local dev has VITE_API_URL at build time and points straight at it.
+ * the next.
+ *
+ * On a deployed stage the SSR side must NOT fetch its own public hostname: that request
+ * leaves the isolate, re-enters the Cloudflare edge from behind it and dies in the TLS
+ * handshake (525/522). The api units are siblings in the stage's dispatch namespace, so
+ * the deploy swaps the null `dispatchFetch` stub for a fetcher that matches the route
+ * table and calls `NS.get(unit).fetch(...)`. Local dev has VITE_API_URL at build time
+ * and points straight at it.
  */
 let client: PikkuRPC | null = null
 
@@ -26,6 +34,9 @@ const resolveRpc = createIsomorphicFn()
   })
   .server((): PikkuRPC => {
     const perRequest = new PikkuRPC()
+    if (dispatchFetch) {
+      perRequest.setPikkuFetch(new PikkuFetch({ fetch: dispatchFetch }))
+    }
     perRequest.setServerUrl(
       import.meta.env.VITE_API_URL ?? new URL('/api', getRequestUrl()).toString(),
     )
