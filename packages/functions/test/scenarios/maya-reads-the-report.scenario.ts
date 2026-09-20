@@ -9,6 +9,7 @@
  */
 import { pikkuScenario } from '#pikku/scenarios'
 import { png, putAtStorage } from '../lib/png.js'
+import { t } from '../lib/messages.js'
 
 export const mayaReadsTheReportScenario = pikkuScenario<void, { projectId: string }>({
   title: 'maya reads the report and opens one route three-up',
@@ -159,13 +160,13 @@ export const mayaReadsTheReportScenario = pikkuScenario<void, { projectId: strin
     await scenario.then(
       'with its verdict',
       'seesText',
-      { text: 'Different' },
+      { text: t('status__different') },
       { actor: actors.maya },
     )
     await scenario.then(
       'and the screen nobody has built is listed as a gap',
       'seesText',
-      { text: 'Nobody has built these' },
+      { text: t('report__gaps_title') },
       { actor: actors.maya },
     )
     await scenario.then(

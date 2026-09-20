@@ -12,6 +12,7 @@
  */
 import { pikkuScenario } from '#pikku/scenarios'
 import { png, putAtStorage } from '../lib/png.js'
+import { t } from '../lib/messages.js'
 
 export const mayaSeesHerLegacyBaselineScenario = pikkuScenario<void, { projectId: string }>({
   title: 'maya pushes a legacy shot and sees it against the route, marked as the baseline',
@@ -101,7 +102,7 @@ export const mayaSeesHerLegacyBaselineScenario = pikkuScenario<void, { projectId
     await scenario.then(
       'and the shot is marked as the baseline',
       'seesText',
-      { text: 'Pinned baseline' },
+      { text: t('baseline__badge') },
       { actor: actors.maya },
     )
     await scenario.then(

@@ -10,6 +10,7 @@
  * for it by design.
  */
 import { pikkuScenario } from '#pikku/scenarios'
+import { t } from '../lib/messages.js'
 
 export const mayaDeclaresARouteScenario = pikkuScenario<void, { projectId: string }>({
   title: 'maya creates a project, declares a route and sees it listed with its coverage state',
@@ -110,7 +111,7 @@ export const mayaDeclaresARouteScenario = pikkuScenario<void, { projectId: strin
     await scenario.then(
       'and the screen legacy lacks is marked as absent, not merely unmapped',
       'seesText',
-      { text: 'Legacy lacks it' },
+      { text: t('coverage__absent') },
       { actor: actors.maya },
     )
 

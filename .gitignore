@@ -20,6 +20,9 @@ vendor/
 .pikku-runtime
 __fabric_scaffold.vite.config.mjs
 
+# opencode tool state, local to a working copy
+.opencode
+
 # Local dev secrets — generated on first `bun run dev`
 .env
 

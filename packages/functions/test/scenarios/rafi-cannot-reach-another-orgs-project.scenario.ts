@@ -18,6 +18,7 @@
  * organisation for whoever asked.
  */
 import { pikkuScenario } from '#pikku/scenarios'
+import { t } from '../lib/messages.js'
 
 export const rafiCannotReachAnotherOrgsProjectScenario = pikkuScenario<void, { projectId: string }>(
   {
@@ -88,7 +89,7 @@ export const rafiCannotReachAnotherOrgsProjectScenario = pikkuScenario<void, { p
       await scenario.then(
         'and the screen tells him nothing about it',
         'seesText',
-        { text: 'That project could not be opened.' },
+        { text: t('project__not_found') },
         { actor: actors.rafi },
       )
 

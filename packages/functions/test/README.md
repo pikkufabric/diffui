@@ -8,9 +8,9 @@ is in `srcDirectories`, so a file here needs no registration.
 
 ```
 test/
-  steps/       one stepper per file    — <verb>.step.ts
+  steps/       one stepper per file    — <verb>.steps.ts
   scenarios/   one scenario per file   — <what-it-proves>.scenario.ts
-  features/    one feature per file    — <domain>.feature.ts
+  features/    one feature per file    — <domain>.scenarios.ts
   lib/         shared helpers, no declarations
 ```
 
@@ -37,9 +37,9 @@ run it after `pikku all`, which is what actually generates them.
 the already-running app on every build. They sign in and navigate, nothing
 more, so they are safe against the normal server.
 
-- `features/auth.feature.ts` — a signed-in session reaches the gated `/app`
+- `features/auth.scenarios.ts` — a signed-in session reaches the gated `/app`
   and the server agrees who it is.
-- `features/pages.feature.ts` — every static route renders with no HTTP error,
+- `features/pages.scenarios.ts` — every static route renders with no HTTP error,
   no failed or 5xx app API call, no uncaught exception, and no console error.
   Routes come from the generated route tree, so new pages are swept
   automatically.
@@ -62,7 +62,7 @@ The runner opens one BrowserContext per actor and signs each in at
   (`browser.context.clearCookies()`), because signing up while another user's
   cookie is attached is refused outright.
 - One actor exists per persona declared with `definePersonas` (see
-  `src/personas.ts`); pikku derives each address from the persona id. The secret
+  `src/personas.virtual-user.ts`); pikku derives each address from the persona id. The secret
   is **never** in that file: it is `SCENARIO_ACTOR_SECRET` in the environment,
   and its absence disables `/api/auth/sign-in/actor` entirely. That absence is
   what keeps the door shut in production.
@@ -88,7 +88,7 @@ explicitly. Never return a Playwright `Locator` or `Page`.
 ## Extending
 
 Add `scenarios/<what-it-proves>.scenario.ts` and list it in a
-`features/<domain>.feature.ts`. A verb the generic steps don't cover gets its own
-`steps/<verb>.step.ts`; the ones already in `steps/` stay generic, and anything
+`features/<domain>.scenarios.ts`. A verb the generic steps don't cover gets its own
+`steps/<verb>.steps.ts`; the ones already in `steps/` stay generic, and anything
 they share goes in `lib/`. Failure screenshots land in
 `.pikku/scenario-failures/` — read them before believing an error message.
