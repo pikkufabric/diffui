@@ -7,7 +7,8 @@
     "dev": "vite dev --port 7104",
     "build": "vite build",
     "preview": "vite preview --port 7104",
-    "tsc": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && tsc --noEmit"
+    "tsc": "bun run i18n:compile && tsc --noEmit",
+    "i18n:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.14.24",
