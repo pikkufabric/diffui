@@ -20,7 +20,6 @@ import type { DB } from '#pikku/db/schema.gen.js'
 import type { ContentService, Logger } from '@pikku/core/services'
 import { canReachProject } from '../permissions.js'
 import { diffScreenshots } from '../lib/diff.js'
-import { Readable } from 'node:stream'
 
 /** Where a shot sits: which screen, in which state, at which resolution. */
 const CoordinatesSchema = z.object({
@@ -358,15 +357,22 @@ const scoreAgainstBaseline = async (
       content.readFileAsBuffer({ bucket: 'shots', key: target.contentKey }),
     ])
 
-    const outcome = diffScreenshots(baselineImage, targetImage)
+    const outcome = await diffScreenshots(baselineImage, targetImage)
 
     let diffContentKey: string | null = null
     if (outcome.diffImage) {
       diffContentKey = `${shot.projectId}/${shot.shotId}.png`
+      /* A Web stream, not `Readable.from`: this runs in a Worker, where
+         `node:stream` is not available. */
       await content.writeFile({
         bucket: 'diffs',
         key: diffContentKey,
-        stream: Readable.from(outcome.diffImage),
+        stream: new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(outcome.diffImage)
+            controller.close()
+          },
+        }),
       })
     }
 
