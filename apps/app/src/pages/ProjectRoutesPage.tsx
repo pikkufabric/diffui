@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import {
   Badge,
   Box,
+  Button,
   Card,
   Group,
   Image,
@@ -13,7 +14,7 @@ import {
   Title,
   Tooltip,
 } from '@pikku/mantine/core'
-import { useParams } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
 import { usePikkuQuery } from '@project/functions-sdk/pikku/api.gen'
 import { m, asI18n } from '@/i18n/messages'
 import { useLocale } from '@/i18n/config'
@@ -50,7 +51,7 @@ const COVERAGE: Record<
  */
 export const ProjectRoutesPage: FC = () => {
   useLocale()
-  const { projectId } = useParams({ from: '/app/projects/$projectId' })
+  const { projectId } = useParams({ from: '/app/projects/$projectId/' })
 
   const project = usePikkuQuery('getProject', { projectId })
   const routes = usePikkuQuery('listRoutes', { projectId })
@@ -90,9 +91,21 @@ export const ProjectRoutesPage: FC = () => {
 
   return (
     <Box maw={1080} w="100%" mx="auto" data-testid="project-detail">
-      <Title order={1} fz={24} fw={650} style={{ letterSpacing: '-0.025em' }}>
-        {project.data ? asI18n(project.data.project.name) : m.common__loading()}
-      </Title>
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Title order={1} fz={24} fw={650} style={{ letterSpacing: '-0.025em' }}>
+          {project.data ? asI18n(project.data.project.name) : m.common__loading()}
+        </Title>
+        <Button
+          variant="light"
+          size="sm"
+          data-testid="project-report-open"
+          renderRoot={(props) => (
+            <Link to="/app/projects/$projectId/report" params={{ projectId }} {...props} />
+          )}
+        >
+          {m.report__view()}
+        </Button>
+      </Group>
       <Text c="dimmed" size="sm" mt={6} style={{ lineHeight: 1.55 }}>
         {m.project__routes_description()}
       </Text>

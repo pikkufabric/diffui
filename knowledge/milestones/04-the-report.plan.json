@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "milestone": "04-the-report",
+  "description": "One screen that answers how a rebuild is going: each route scored per branch with the worst first and the count each branch score was taken over, routes nobody has built listed as gaps rather than as scores, and one route opened to see legacy, the branch and the difference side by side.",
+  "covers": [
+    {
+      "note": "knowledge/milestones/04-the-report.md",
+      "hash": "5e0185110187",
+      "complete": true
+    }
+  ],
+  "model": {
+    "kind": "n/a",
+    "description": "No new tables. The report is a reading of the shots and comparisons the two previous milestones already store, and deriving it on the way out keeps the ordering and the gap/scores split from becoming a stored copy that drifts."
+  },
+  "functions": {
+    "kind": "built",
+    "description": "Three read functions: the branches to report on, the scored rows for one branch with their counts, and the three images for one route so a number can be looked at rather than only read.",
+    "items": [
+      {
+        "name": "listBranches",
+        "description": "A project's rebuilds, so the report can be read one branch at a time and each score is labelled with what it is of.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may see the rebuilds it is measured against."
+      },
+      {
+        "name": "projectReport",
+        "description": "Every declared route for one branch with its verdict and the differing pixel count and total, ordered worst first, plus the counts — how many routes were scored, how many are identical, and how many are gaps of each kind. A route nobody has built has no score and is never rendered as one.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may see how far a rebuild is."
+      },
+      {
+        "name": "routeComparison",
+        "description": "One route's legacy baseline, the branch shot and the generated difference, each with a signed URL to read it back, so a percentage can be checked against the images it came from.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may see a route's comparison."
+      }
+    ]
+  },
+  "roles": {
+    "kind": "built",
+    "description": "The same one engineer, on the same app. The report is the screen they already have, given the answer they came for.",
+    "items": [
+      {
+        "name": "engineer",
+        "description": "Runs a rebuild — opens the worst-diff list first, every time",
+        "app": "app"
+      }
+    ]
+  },
+  "scopes": {
+    "kind": "n/a",
+    "description": "No scopes. The report is gated by organisation membership of the project it is about, which depends on the row and is therefore a permission, not a scope."
+  },
+  "ui": {
+    "kind": "built",
+    "description": "One screen and one route detail: the project's report, worst first, and a route opened three-up when a number is not enough.",
+    "items": [
+      {
+        "route": "/app/projects/$projectId/report",
+        "description": "How far each rebuild is: the branch's routes scored with the worst first, the count each score was taken over, and the routes nobody has built listed as gaps rather than as scores.",
+        "pass": 1,
+        "scenarios": [
+          "mayaReadsTheReportScenario"
+        ]
+      },
+      {
+        "route": "/app/projects/$projectId/routes/$routeKey",
+        "description": "One route with legacy, the branch and the difference side by side, and the differing pixel count and total the percentage was taken over.",
+        "pass": 1,
+        "scenarios": [
+          "mayaReadsTheReportScenario"
+        ]
+      }
+    ]
+  },
+  "scenarios": {
+    "backend": {
+      "kind": "built",
+      "description": "The split the report exists for: a route a rebuild has not pushed is counted as a gap, not as a zero score, and is kept out of the denominator.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "report counts unbuilt routes as gaps rather than as scores",
+          "fn": "projectReport",
+          "name": "reportSeparatesGapsFromScoresScenario",
+          "pass": 1
+        }
+      ]
+    },
+    "browser": {
+      "kind": "built",
+      "description": "Maya opens the report, sees the worst route first with the count it was taken over, opens that route three-up, and sees an unbuilt route listed as a gap.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "maya reads the report and opens one route three-up",
+          "name": "mayaReadsTheReportScenario",
+          "pass": 1
+        }
+      ]
+    },
+    "permission": {
+      "kind": "built",
+      "description": "A project's report, its branches and a route's comparison are each refused to anyone outside the organisation that owns it.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "list branches is refused from outside the organization",
+          "fn": "listBranches",
+          "name": "listBranchesIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        },
+        {
+          "feature": "shots",
+          "scenario": "project report is refused from outside the organization",
+          "fn": "projectReport",
+          "name": "projectReportIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        },
+        {
+          "feature": "shots",
+          "scenario": "route comparison is refused from outside the organization",
+          "fn": "routeComparison",
+          "name": "routeComparisonIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        }
+      ]
+    }
+  },
+  "deferrals": []
+}

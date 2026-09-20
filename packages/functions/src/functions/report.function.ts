@@ -191,6 +191,13 @@ export const projectReport = pikkuFunc({
       return { ...base, status: 'not-built' as const }
     })
 
+    /* Worst first, because the ordering IS the work queue: the screens most
+       wrong come first, and the gaps sit behind the scored rows rather than
+       interleaved with them. */
+    const RANK: Record<string, number> = { different: 0, 'size-mismatch': 1, identical: 2 }
+    const rank = (status: string) => RANK[status] ?? 3
+    rows.sort((a, b) => rank(a.status) - rank(b.status) || (b.diffRatio ?? 0) - (a.diffRatio ?? 0))
+
     const count = (status: string) => rows.filter((row) => row.status === status).length
     const identical = count('identical')
     const different = count('different')
@@ -208,6 +215,170 @@ export const projectReport = pikkuFunc({
         legacyAbsent: count('legacy-absent'),
         unmapped: count('unmapped'),
       },
+    }
+  },
+})
+
+const ImageRef = z.object({
+  shotId: z.string(),
+  assetUrl: z.string(),
+  width: z.number(),
+  height: z.number(),
+})
+
+export const RouteComparisonInput = z.object({
+  projectId: z.string(),
+  branchKey: z.string(),
+  routeKey: z.string(),
+  /** Defaults to the base state and the desktop resolution. */
+  stateKey: z.string().optional(),
+  viewportKey: z.string().optional(),
+})
+
+export const RouteComparisonOutput = z.object({
+  routeKey: z.string(),
+  routeLabel: z.string(),
+  stateKey: z.string(),
+  viewportKey: z.string(),
+  branchKey: z.string(),
+  status: RowStatus,
+  diffPixels: z.number().nullable(),
+  comparedPixels: z.number().nullable(),
+  diffRatio: z.number().nullable(),
+  baseline: ImageRef.nullable(),
+  target: ImageRef.nullable(),
+  diff: z.object({ assetUrl: z.string() }).nullable(),
+})
+
+/**
+ * The three images behind one number.
+ *
+ * A percentage tells you a screen is wrong and never how. This reads the pinned
+ * legacy shot, the branch shot and the generated difference back by signed URL,
+ * so a person can look at what they are being scored on instead of trusting it.
+ *
+ * The same refusals as the push apply: a state or resolution the project never
+ * declared is a miss here, not an empty comparison, because "nobody captured
+ * it" and "nobody declared it" are different answers.
+ */
+export const routeComparison = pikkuFunc({
+  expose: true,
+  auth: true,
+  readonly: true,
+  permissions: { canReachProject },
+  description: 'One route’s legacy baseline, branch shot and difference, with URLs to see them.',
+  input: RouteComparisonInput,
+  output: RouteComparisonOutput,
+  func: async ({ kysely, content }, input) => {
+    if (!content) {
+      throw new Error('No content service is available, so a comparison cannot be read back.')
+    }
+
+    const branch = await kysely
+      .selectFrom('branch')
+      .select(['branchId', 'key'])
+      .where('projectId', '=', input.projectId)
+      .where('key', '=', input.branchKey)
+      .executeTakeFirst()
+    if (!branch) {
+      throw new Error(`This project declares no branch called \`${input.branchKey}\`.`)
+    }
+
+    const route = await kysely
+      .selectFrom('route')
+      .select(['routeId', 'label'])
+      .where('projectId', '=', input.projectId)
+      .where('key', '=', input.routeKey)
+      .executeTakeFirst()
+    if (!route) {
+      throw new Error(`This project declares no screen called \`${input.routeKey}\`.`)
+    }
+
+    const state = await kysely
+      .selectFrom('routeState')
+      .select('stateId')
+      .where('routeId', '=', route.routeId)
+      .where('key', '=', input.stateKey ?? 'default')
+      .executeTakeFirst()
+    if (!state) {
+      throw new Error(
+        `\`${input.routeKey}\` declares no state called \`${input.stateKey ?? 'default'}\`.`,
+      )
+    }
+
+    const viewport = await kysely
+      .selectFrom('viewport')
+      .select('viewportId')
+      .where('projectId', '=', input.projectId)
+      .where('key', '=', input.viewportKey ?? 'desktop')
+      .executeTakeFirst()
+    if (!viewport) {
+      throw new Error(
+        `This project declares no resolution called \`${input.viewportKey ?? 'desktop'}\`.`,
+      )
+    }
+
+    const baseline = await kysely
+      .selectFrom('shot')
+      .select(['shotId', 'contentKey', 'width', 'height'])
+      .where('projectId', '=', input.projectId)
+      .where('routeId', '=', route.routeId)
+      .where('stateId', '=', state.stateId)
+      .where('viewportId', '=', viewport.viewportId)
+      .where('side', '=', 'legacy')
+      .where('isBaseline', '=', true)
+      .executeTakeFirst()
+
+    const target = await kysely
+      .selectFrom('shot')
+      .select(['shotId', 'contentKey', 'width', 'height'])
+      .where('projectId', '=', input.projectId)
+      .where('routeId', '=', route.routeId)
+      .where('stateId', '=', state.stateId)
+      .where('viewportId', '=', viewport.viewportId)
+      .where('branchId', '=', branch.branchId)
+      .orderBy('capturedAt', 'desc')
+      .executeTakeFirst()
+
+    const comparison =
+      baseline && target
+        ? await kysely
+            .selectFrom('comparison')
+            .select(['status', 'diffPixels', 'comparedPixels', 'diffRatio', 'diffContentKey'])
+            .where('baselineShotId', '=', baseline.shotId)
+            .where('targetShotId', '=', target.shotId)
+            .executeTakeFirst()
+        : undefined
+
+    const expires = new Date(Date.now() + 60 * 60 * 1000)
+    const sign = (bucket: 'shots' | 'diffs', contentKey: string) =>
+      content.signContentKey({ bucket, contentKey, dateLessThan: expires })
+
+    const image = async (shot: typeof baseline) =>
+      shot
+        ? {
+            shotId: shot.shotId,
+            assetUrl: await sign('shots', shot.contentKey),
+            width: shot.width,
+            height: shot.height,
+          }
+        : null
+
+    return {
+      routeKey: input.routeKey,
+      routeLabel: route.label,
+      stateKey: input.stateKey ?? 'default',
+      viewportKey: input.viewportKey ?? 'desktop',
+      branchKey: branch.key,
+      status: (comparison?.status ?? 'not-built') as z.infer<typeof RowStatus>,
+      diffPixels: comparison?.diffPixels ?? null,
+      comparedPixels: comparison?.comparedPixels ?? null,
+      diffRatio: comparison?.diffRatio ?? null,
+      baseline: await image(baseline),
+      target: await image(target),
+      diff: comparison?.diffContentKey
+        ? { assetUrl: await sign('diffs', comparison.diffContentKey) }
+        : null,
     }
   },
 })

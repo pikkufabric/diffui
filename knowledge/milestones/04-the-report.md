@@ -2,7 +2,7 @@
 type: milestone
 title: The report
 description: An engineer sees how far each rebuild is, and what nobody has built, without confusing the two.
-status: proposed
+status: built
 entities: [project, route]
 tags: [okf]
 ---

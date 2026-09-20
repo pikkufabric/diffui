@@ -2,7 +2,8 @@
 type: milestone
 title: A rebuild is scored against legacy
 description: An engineer pushes a branch screenshot and sees how far it is from the legacy baseline.
-status: proposed
+surface: cli
+status: built
 entities: [shot, project]
 tags: [okf]
 ---

@@ -92,6 +92,35 @@ export const declareBranch = pikkuFunc({
   },
 })
 
+export const ListBranchesInput = z.object({ projectId: z.string() })
+
+export const ListBranchesOutput = z.object({
+  branches: z.array(z.object({ branchId: z.string(), key: z.string(), label: z.string() })),
+})
+
+/**
+ * The rebuilds a project has declared, so a report can be read one branch at a
+ * time and each score is labelled with what it is of.
+ */
+export const listBranches = pikkuFunc({
+  expose: true,
+  auth: true,
+  readonly: true,
+  permissions: { canReachProject },
+  description: 'A project’s rebuilds, by key.',
+  input: ListBranchesInput,
+  output: ListBranchesOutput,
+  func: async ({ kysely }, input) => {
+    const branches = await kysely
+      .selectFrom('branch')
+      .select(['branchId', 'key', 'label'])
+      .where('projectId', '=', input.projectId)
+      .orderBy('key', 'asc')
+      .execute()
+    return { branches }
+  },
+})
+
 export const RequestShotUploadInput = CoordinatesSchema.extend({
   side: SideSchema,
   /** Required for a rebuild shot, refused for a legacy one — the DB enforces it too. */

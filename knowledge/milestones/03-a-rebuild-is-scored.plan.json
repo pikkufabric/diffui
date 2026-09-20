@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "milestone": "03-a-rebuild-is-scored",
+  "description": "A rebuild's screenshot is scored against the pinned legacy baseline for the same screen, state and resolution, and the engineer reads the verdict where they pushed it. The differing pixel count and the total it was taken over are both kept so the percentage can be checked; two images of different sizes are reported as size-mismatch and never resized into a score.",
+  "covers": [
+    {
+      "note": "knowledge/milestones/03-a-rebuild-is-scored.md",
+      "hash": "d113b9f4403f",
+      "complete": true
+    }
+  ],
+  "model": {
+    "kind": "built",
+    "description": "The verdict on one rebuild shot against one legacy shot. Nothing here can express branch-against-branch: the baseline column is always a legacy shot and the target always a branch shot, because the question is how far a rebuild is from the app it replaces.",
+    "items": [
+      {
+        "table": "comparison",
+        "description": "One pixel comparison of a rebuild shot against the legacy baseline shot for the same route, state and viewport, with the numbers it was computed from rather than only the ratio. `status` carries `size-mismatch` as a first-class outcome, so a rebuild captured at the wrong resolution is reported rather than scored.",
+        "fields": [
+          {
+            "name": "comparison_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "baseline_shot_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "target_shot_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "status",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "diff_pixels",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "compared_pixels",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "diff_ratio",
+            "type": "real",
+            "classification": "internal"
+          },
+          {
+            "name": "diff_content_key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "project_id",
+            "references": "project.project_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsComparisonsScenario"
+          },
+          {
+            "column": "baseline_shot_id",
+            "references": "shot.shot_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsComparisonsScenario"
+          },
+          {
+            "column": "target_shot_id",
+            "references": "shot.shot_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsComparisonsScenario"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "kind": "built",
+    "description": "The scoring itself happens on upload, inside registerShot — a report that computed hundreds of comparisons while someone waited would be a report nobody opens twice. What this milestone adds is the read side: how far one rebuild is from legacy, per screen, with the differing pixel count and the total a percentage must be read alongside.",
+    "items": [
+      {
+        "name": "projectReport",
+        "description": "Every declared coordinate for one branch, scored against the pinned legacy shot where both exist — identical, different, size-mismatch — and otherwise reported as not-built, no-baseline, legacy-absent or unmapped. It carries the differing pixel count and the total the ratio was taken over, and counts the gaps separately from the scores rather than folding them into a percentage.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may see how far a rebuild is."
+      }
+    ]
+  },
+  "roles": {
+    "kind": "built",
+    "description": "The same one engineer, on the same app. Scoring adds no person and no frontend.",
+    "items": [
+      {
+        "name": "engineer",
+        "description": "Runs a rebuild — pushes screenshots and reads how far it is from legacy",
+        "app": "app"
+      }
+    ]
+  },
+  "scopes": {
+    "kind": "n/a",
+    "description": "No scopes. Reading a score is gated by organisation membership of the project it is about, which depends on the row and is therefore a permission, not a scope."
+  },
+  "ui": {
+    "kind": "n/a",
+    "description": "No screen. The milestone is reached through the capture CLI: `diffui push` prints the verdict for each shot it lands. The screen that renders scores across a project is the next milestone, the report, and building one here would build it early and twice."
+  },
+  "scenarios": {
+    "backend": {
+      "kind": "built",
+      "description": "The whole slice with real bytes: an identical pair scores identical, a changed pair scores a measured fraction over the pixels it was taken over, and a size mismatch is reported rather than reconciled.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "maya pushes a rebuild screenshot and sees how far it is from legacy",
+          "fn": "projectReport",
+          "name": "aRebuildIsScoredScenario",
+          "pass": 1
+        },
+        {
+          "feature": "shots",
+          "scenario": "deleting a project takes its comparisons",
+          "fn": "deleteProject",
+          "name": "deletingAProjectTakesItsComparisonsScenario",
+          "pass": 2
+        }
+      ]
+    },
+    "browser": {
+      "kind": "n/a",
+      "description": "No browser scenario. The score is read in the push result, and the report screen that will drive one in a browser is the next milestone."
+    },
+    "permission": {
+      "kind": "built",
+      "description": "A project's scores are refused to anyone outside the organisation that owns it.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "project report is refused from outside the organization",
+          "fn": "projectReport",
+          "name": "projectReportIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        }
+      ]
+    }
+  },
+  "deferrals": []
+}
