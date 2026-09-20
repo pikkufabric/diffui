@@ -4,11 +4,7 @@
   },
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
@@ -20,25 +16,12 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": false,
-    "types": [
-      "vite/client",
-      "node"
-    ],
+    "types": ["vite/client", "node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
   },
-  "include": [
-    "src",
-    "dev",
-    "build",
-    "vite.config.ts",
-    "wrangler.jsonc"
-  ],
-  "exclude": [
-    "src/paraglide"
-  ]
+  "include": ["src", "dev", "build", "vite.config.ts", "wrangler.jsonc"],
+  "exclude": ["src/paraglide"]
 }
