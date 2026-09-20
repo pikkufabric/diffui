@@ -4,6 +4,11 @@ import { deletingAProjectTakesItsRoutesScenario } from '../scenarios/deleting-a-
 import { mayaDeclaresARouteScenario } from '../scenarios/maya-declares-a-route.scenario.js'
 import { rafiCannotReachAnotherOrgsProjectScenario } from '../scenarios/rafi-cannot-reach-another-orgs-project.scenario.js'
 import { getProjectIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/get-project-is-refused-from-outside-the-organization.scenario.js'
+import { createProjectIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/create-project-is-refused-from-outside-the-organization.scenario.js'
+import { listProjectsIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/list-projects-is-refused-from-outside-the-organization.scenario.js'
+import { declareRoutesIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/declare-routes-is-refused-from-outside-the-organization.scenario.js'
+import { listRoutesIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/list-routes-is-refused-from-outside-the-organization.scenario.js'
+import { deleteProjectIsRefusedFromOutsideTheOrganizationScenario } from '../scenarios/delete-project-is-refused-from-outside-the-organization.scenario.js'
 
 export const projectsFeature = pikkuFeature({
   name: 'projects',
@@ -15,5 +20,10 @@ export const projectsFeature = pikkuFeature({
     mayaDeclaresARouteScenario,
     rafiCannotReachAnotherOrgsProjectScenario,
     getProjectIsRefusedFromOutsideTheOrganizationScenario,
+    createProjectIsRefusedFromOutsideTheOrganizationScenario,
+    listProjectsIsRefusedFromOutsideTheOrganizationScenario,
+    declareRoutesIsRefusedFromOutsideTheOrganizationScenario,
+    listRoutesIsRefusedFromOutsideTheOrganizationScenario,
+    deleteProjectIsRefusedFromOutsideTheOrganizationScenario,
   ],
 })
