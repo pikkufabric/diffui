@@ -2,7 +2,7 @@
 type: milestone
 title: Legacy baselines land
 description: An engineer pushes legacy screenshots from the CLI and sees them against the routes they belong to.
-status: proposed
+status: built
 entities: [shot, route]
 tags: [okf]
 ---

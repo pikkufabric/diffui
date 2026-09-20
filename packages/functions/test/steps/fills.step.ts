@@ -3,6 +3,7 @@ import { pikkuScenarioStep } from '#pikku/scenarios'
 import {
   ControlInput,
   addressesOnScreen,
+  interactive,
   selectorFor,
   session,
   underlying,
@@ -29,6 +30,7 @@ export const fills = pikkuScenarioStep({
   output: FillsOutput,
   browser: async (_services, input, { browser }) => {
     const actor = session(browser)
+    await interactive(actor)
     try {
       await actor.locate(selectorFor(input)).fill(input.value)
     } catch (error) {

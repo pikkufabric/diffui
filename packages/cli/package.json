@@ -1,0 +1,12 @@
+{
+  "name": "@project/cli",
+  "version": "0.0.1",
+  "private": true,
+  "bin": {
+    "diffui": "./src/index.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

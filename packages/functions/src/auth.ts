@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
-import { organization } from 'better-auth/plugins'
+import { apiKey } from '@better-auth/api-key'
+import { bearer, deviceAuthorization, organization } from 'better-auth/plugins'
 import { ACTOR_SIGN_IN_OPT_IN_ENV, pikkuActor, pikkuBan, pikkuFabric } from '@pikku/better-auth'
 import { pikkuBetterAuth } from '#pikku/auth'
 
@@ -105,8 +106,60 @@ export const auth = pikkuBetterAuth(async ({ kysely, secrets, variables, emailSe
     // who may do what. Which organisation a caller is acting in comes off the
     // session as `activeOrganizationId`, which is what every project function's
     // permission reads.
+    //
+    // deviceAuthorization() + bearer(): how the `diffui` CLI signs in from a
+    // consuming repo. The CLI has no browser and no password to hold, so it
+    // runs the RFC 8628 device flow — it asks for a code, the engineer approves
+    // it in a browser they are already signed into, and the CLI polls until it
+    // is handed a session token. `bearer()` is what then lets that token arrive
+    // as `Authorization: Bearer <token>` instead of as a cookie.
+    //
+    // A machine in CI wants the OTHER path — a scoped API key on `x-api-key` —
+    // and the two must never share a header. That path is not wired yet; see
+    // knowledge/questions/how-should-ci-authenticate.md.
     plugins: [
       organization(),
+      deviceAuthorization({ expiresIn: '5min', interval: '5s', schema: {} }),
+      bearer(),
+      // apiKey(): the credential the CLI actually calls functions with.
+      //
+      // The device flow above ends in a better-auth SESSION token, and a session
+      // token only resolves on better-auth's own routes — the `bearer()` hook
+      // does not run when pikku's session middleware calls `auth.api.getSession`
+      // directly, so a bearer session never authenticates an RPC. A key does,
+      // through the middleware's own api-key branch, which is the documented
+      // machine path. `login` therefore trades its session for a key once and
+      // stores the key.
+      apiKey({
+        enableMetadata: true,
+        enableSessionForAPIKeys: true,
+        // A CEILING, not a throttle.
+        //
+        // The plugin's default is TEN requests per day per key, which is not a
+        // rate limit for this shape of client: `diffui push` costs two calls per
+        // screenshot, so a four-hundred-shot push is eight hundred calls and the
+        // default fails the SECOND screenshot with "Authentication required".
+        // Ten is not obviously wrong until you know that.
+        //
+        // Ten thousand a day is roughly twelve full pushes — enough to re-run
+        // after a fix, low enough to stop a runaway loop. The limit is per KEY,
+        // so CI and a laptop each get their own budget and one cannot exhaust
+        // the other.
+        //
+        // These numbers are DEFAULTS STAMPED AT KEY CREATION, not a policy read
+        // at verify time: the plugin copies them into the row's
+        // `rate_limit_max` / `rate_limit_time_window` columns when a key is
+        // issued, and the verify path then reads only those columns. So
+        // changing them here does nothing to keys that already exist, and a row
+        // with either column NULL is exempt from the limit entirely.
+        //
+        // Note this is not a free check. On the limited path, verification
+        // increments `request_count` and sets `last_request` — a database WRITE
+        // on every authenticated call. Enabling it buys a cap at that price.
+        // (`remaining` is a different feature, a lifetime quota, and this does
+        // not touch it.)
+        rateLimit: { enabled: true, maxRequests: 10000, timeWindow: 1000 * 60 * 60 * 24 },
+      }),
       pikkuActor({
         secret: SCENARIO_ACTOR_SECRET,
         allowSignIn: ALLOW_ACTOR_SIGN_IN,

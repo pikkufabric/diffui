@@ -1,7 +1,7 @@
 {
   "version": 1,
   "milestone": "01-a-project-and-its-routes",
-  "description": "A project exists, belongs to an organisation, seeds its three viewports, and holds the named routes it tracks — with the three coverage states visible and another organisation refused.",
+  "description": "A project exists, belongs to an organisation, seeds its three viewports, and holds the named routes it tracks \u2014 with the three coverage states visible and another organisation refused.",
   "covers": [
     {
       "note": "knowledge/milestones/01-a-project-and-its-routes.md",
@@ -121,7 +121,7 @@
       },
       {
         "table": "route",
-        "description": "A screen, identified by name rather than URL, carrying the legacy path and the new path. legacy_path NULL means nobody has mapped it; legacy_absent means legacy genuinely lacks it — two different claims that a report must never merge.",
+        "description": "A screen, identified by name rather than URL, carrying the legacy path and the new path. legacy_path NULL means nobody has mapped it; legacy_absent means legacy genuinely lacks it \u2014 two different claims that a report must never merge.",
         "fields": [
           {
             "name": "route_id",
@@ -212,7 +212,7 @@
       },
       {
         "name": "declareRoutes",
-        "description": "Upsert the routes a project tracks, by key — what the CLI's init calls, so the route inventory is reviewable in the consuming repo.",
+        "description": "Upsert the routes a project tracks, by key \u2014 what the CLI's init calls, so the route inventory is reviewable in the consuming repo.",
         "pass": 1,
         "scopes": [],
         "permission": "canReachProject"
@@ -239,7 +239,7 @@
     "items": [
       {
         "name": "engineer",
-        "description": "Runs a rebuild — declares the screens it tracks, pushes screenshots, reads the report",
+        "description": "Runs a rebuild \u2014 declares the screens it tracks, pushes screenshots, reads the report",
         "app": "app"
       }
     ]
@@ -279,7 +279,7 @@
         {
           "feature": "projects",
           "scenario": "routesRoundTripByKeyScenario",
-          "name": "Routes are declared by key and read back with their coverage state",
+          "name": "routesRoundTripByKeyScenario",
           "pass": 1
         },
         {
@@ -298,61 +298,61 @@
         {
           "feature": "projects",
           "scenario": "mayaDeclaresARouteScenario",
-          "name": "maya creates a project, declares a route and sees it listed with its coverage state",
+          "name": "mayaDeclaresARouteScenario",
           "pass": 1
         },
         {
           "feature": "projects",
           "scenario": "rafiCannotReachAnotherOrgsProjectScenario",
-          "name": "rafi cannot open maya project",
+          "name": "rafiCannotReachAnotherOrgsProjectScenario",
           "pass": 1
         }
       ]
     },
     "permission": {
       "kind": "built",
-      "description": "The refusal that makes organisation scoping real rather than asserted — it rides with the milestone that creates the thing being refused.",
+      "description": "The refusal that makes organisation scoping real rather than asserted \u2014 it rides with the milestone that creates the thing being refused.",
       "items": [
         {
           "feature": "projects",
           "scenario": "createProjectIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "createProject",
-          "name": "Someone outside the organisation cannot create a project in it",
+          "name": "createProjectIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 2
         },
         {
           "feature": "projects",
           "scenario": "listProjectsIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "listProjects",
-          "name": "A project list never carries another organisation's projects",
+          "name": "listProjectsIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 2
         },
         {
           "feature": "projects",
           "scenario": "getProjectIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "getProject",
-          "name": "rafi cannot open maya project",
+          "name": "getProjectIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 1
         },
         {
           "feature": "projects",
           "scenario": "declareRoutesIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "declareRoutes",
-          "name": "Someone outside the organisation cannot declare routes on its project",
+          "name": "declareRoutesIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 2
         },
         {
           "feature": "projects",
           "scenario": "listRoutesIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "listRoutes",
-          "name": "Someone outside the organisation cannot read its routes",
+          "name": "listRoutesIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 2
         },
         {
           "feature": "projects",
           "scenario": "deleteProjectIsRefusedFromOutsideTheOrganizationScenario",
           "fn": "deleteProject",
-          "name": "Someone outside the organisation cannot delete its project",
+          "name": "deleteProjectIsRefusedFromOutsideTheOrganizationScenario",
           "pass": 2
         }
       ]

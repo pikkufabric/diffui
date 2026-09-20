@@ -46,16 +46,16 @@
   },
   "environments": {
     "local": {
-      "apiUrl": "http://localhost:3000",
+      "apiUrl": "http://localhost:3300",
       "appUrl": "http://localhost:7104",
       "signInPath": "/api/auth/sign-in/actor"
     },
     "sandbox": {
-      "apiUrl": "http://localhost:4000",
+      "apiUrl": "http://localhost:4300",
       "signInPath": "/api/auth/sign-in/actor"
     },
     "coverage": {
-      "apiUrl": "http://localhost:4010",
+      "apiUrl": "http://localhost:4310",
       "signInPath": "/api/auth/sign-in/actor"
     },
     "stage": {

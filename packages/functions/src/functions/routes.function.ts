@@ -30,6 +30,23 @@ const RouteSchema = z.object({
   legacyCoverage: LegacyCoverage,
 })
 
+/**
+ * One condition a screen can be in — empty, populated, mid-validation.
+ *
+ * `ref` is a note from the capturing repo to a person reading the report: the
+ * fixture or test that sets this state up. diffui never parses it, never
+ * resolves it and never validates it, because the moment it does, diffui is
+ * coupled to whatever that repo happens to test with.
+ */
+const RouteStateDeclarationSchema = z.object({
+  key: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9][a-z0-9.-]*$/, 'Lowercase letters, numbers, dots and hyphens'),
+  label: z.string().min(1),
+  ref: z.string().nullable().optional(),
+})
+
 /** One route as the consuming repo's inventory file declares it. */
 const RouteDeclarationSchema = z.object({
   key: z
@@ -41,6 +58,13 @@ const RouteDeclarationSchema = z.object({
   newPath: z.string().nullable().optional(),
   /** Say so explicitly — it is a claim, and it is not the same as leaving the path out. */
   legacyAbsent: z.boolean().optional(),
+  /**
+   * The conditions this screen is captured in. A route with none declared gets a
+   * single `default` state, because a shot must reference a state by foreign key
+   * and most screens only ever have one — making every inventory spell that out
+   * would be ceremony for the common case.
+   */
+  states: z.array(RouteStateDeclarationSchema).optional(),
 })
 
 export const DeclareRoutesInput = z.object({
@@ -93,6 +117,39 @@ export const declareRoutes = pikkuFunc({
           }),
         )
         .execute()
+
+      const { routeId } = await kysely
+        .selectFrom('route')
+        .select('routeId')
+        .where('projectId', '=', input.projectId)
+        .where('key', '=', route.key)
+        .executeTakeFirstOrThrow()
+
+      const states = route.states?.length
+        ? route.states
+        : [{ key: 'default', label: 'Default', ref: null }]
+
+      for (const [stateIndex, state] of states.entries()) {
+        await kysely
+          .insertInto('routeState')
+          .values({
+            stateId: crypto.randomUUID(),
+            routeId,
+            key: state.key,
+            label: state.label,
+            ref: state.ref ?? null,
+            sort: stateIndex,
+            createdAt: now,
+          })
+          .onConflict((oc) =>
+            oc.columns(['routeId', 'key']).doUpdateSet({
+              label: state.label,
+              ref: state.ref ?? null,
+              sort: stateIndex,
+            }),
+          )
+          .execute()
+      }
     }
 
     const routes = await readRoutes(kysely, input.projectId)

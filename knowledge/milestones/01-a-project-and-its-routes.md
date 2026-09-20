@@ -2,7 +2,7 @@
 type: milestone
 title: A project and its routes
 description: An engineer creates a project and declares the screens it tracks, and sees which of them legacy has.
-status: dispatched
+status: built
 entities: [project, route]
 tags: [okf]
 ---

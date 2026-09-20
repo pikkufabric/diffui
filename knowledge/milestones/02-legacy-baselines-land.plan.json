@@ -1,0 +1,350 @@
+{
+  "version": 1,
+  "milestone": "02-legacy-baselines-land",
+  "description": "Legacy screenshots are pushed straight to storage by the CLI and registered against a route, state and viewport the project declared. The first legacy shot for a coordinate is pinned as the baseline; an undeclared state or resolution is refused before any bytes move; and the pinned shot is visible against its route on the project screen.",
+  "covers": [
+    {
+      "note": "knowledge/milestones/02-legacy-baselines-land.md",
+      "hash": "f238b8b25b80",
+      "complete": true
+    }
+  ],
+  "model": {
+    "kind": "built",
+    "description": "The baseline side: the named states a screen can be captured in, the rebuild branches a shot can belong to instead of legacy, and the shot rows themselves. Every part of a shot's claim is a foreign key, so nothing can be uploaded against a state, resolution or branch the project never declared.",
+    "items": [
+      {
+        "table": "route_state",
+        "description": "One named condition a screen can be in — a dialog open, a tab selected, a validation error. A state belongs to exactly one route, so a state declared on another screen does not count for this one. `ref` is free text a person reads and diffui never resolves.",
+        "fields": [
+          {
+            "name": "state_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "route_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "ref",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "sort",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "route_id",
+            "references": "route.route_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          }
+        ]
+      },
+      {
+        "table": "branch",
+        "description": "One rebuild. Legacy is deliberately NOT one of these: modelling legacy as the branch called legacy would make branch-against-branch expressible, and the moment it is expressible someone scores two rebuilds against each other and calls the winner done. The table lands here because a shot names the side it came from.",
+        "fields": [
+          {
+            "name": "branch_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "label",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "updated_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "project_id",
+            "references": "project.project_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          }
+        ]
+      },
+      {
+        "table": "shot",
+        "description": "One captured PNG and the claim of what it shows. The image bytes live in storage; this row names the key they were written at. `is_baseline` pins WHICH legacy shot everyone is measured against, because legacy still runs and can be recaptured — without it the baseline would drift to whatever landed last.",
+        "fields": [
+          {
+            "name": "shot_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "project_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "route_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "state_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "viewport_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "side",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "branch_id",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "content_key",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "width",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "height",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "byte_size",
+            "type": "integer",
+            "classification": "internal"
+          },
+          {
+            "name": "is_baseline",
+            "type": "boolean",
+            "classification": "internal"
+          },
+          {
+            "name": "captured_at",
+            "type": "text",
+            "classification": "internal"
+          },
+          {
+            "name": "created_at",
+            "type": "text",
+            "classification": "internal"
+          }
+        ],
+        "relationships": [
+          {
+            "column": "project_id",
+            "references": "project.project_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          },
+          {
+            "column": "route_id",
+            "references": "route.route_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          },
+          {
+            "column": "state_id",
+            "references": "route_state.state_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          },
+          {
+            "column": "viewport_id",
+            "references": "viewport.viewport_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          },
+          {
+            "column": "branch_id",
+            "references": "branch.branch_id",
+            "onDelete": "cascade",
+            "provedBy": "deletingAProjectTakesItsShotsScenario"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "kind": "built",
+    "description": "The push, in the three steps images-never-pass-through-the-api requires: ask where to put it, PUT the bytes at storage, register the row. The coordinates are resolved before a URL is handed out, so an undeclared state fails before a byte moves.",
+    "items": [
+      {
+        "name": "declareBranch",
+        "description": "Declare the rebuild a shot manifest names, upserting it by key, so a rebuild shot has something to belong to.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may declare a rebuild for it."
+      },
+      {
+        "name": "requestShotUpload",
+        "description": "Hand back a short-lived, path-bound upload URL for one screenshot, at storage rather than through the API. The route, state, viewport and side are resolved first, so a coordinate nobody declared is refused here.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may be handed a place to upload a shot of it."
+      },
+      {
+        "name": "registerShot",
+        "description": "Record the captured PNG against the screen, state, resolution and side it is of, reading dimensions from the image rather than trusting the manifest. The first legacy shot for a coordinate takes the baseline role unasked; a later one only displaces it when the push says to re-pin.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may record a screenshot against it."
+      },
+      {
+        "name": "listShots",
+        "description": "A project's shots with the route, state and viewport each belongs to, and which one is pinned as the baseline, so the screen can show a captured shot against its route.",
+        "pass": 1,
+        "scopes": [],
+        "permission": "Only someone in the organisation that owns the project may see its shots."
+      }
+    ]
+  },
+  "roles": {
+    "kind": "built",
+    "description": "The same one engineer, on the same app. This milestone adds no person and no frontend — the baseline lands on the screen the previous milestone already gave them.",
+    "items": [
+      {
+        "name": "engineer",
+        "description": "Runs a rebuild — pushes screenshots from the CLI and reads what landed against each route",
+        "app": "app"
+      }
+    ]
+  },
+  "scopes": {
+    "kind": "n/a",
+    "description": "No scopes. Pushing a screenshot is gated by organisation membership of the project being pushed to, which depends on the row and is therefore a permission, not a scope. A scope would read the same for every row, and this one does not."
+  },
+  "ui": {
+    "kind": "built",
+    "description": "The project screen gains the other half of a route: the legacy shot that landed against it, marked when it is the pinned baseline. No new screen — the route list the engineer already reads is where a baseline belongs.",
+    "items": [
+      {
+        "route": "/app/projects/$projectId",
+        "description": "One project's routes, each showing the legacy baseline shot that has landed against it — the image itself, and a mark saying this is the one every rebuild is measured against.",
+        "pass": 1,
+        "scenarios": [
+          "mayaSeesHerLegacyBaselineScenario"
+        ]
+      }
+    ]
+  },
+  "scenarios": {
+    "backend": {
+      "kind": "built",
+      "description": "Legacy bytes go straight to storage and the row that points at them is registered; a coordinate nobody declared is refused.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "legacyBaselineLandsScenario",
+          "name": "legacyBaselineLandsScenario",
+          "pass": 1
+        },
+        {
+          "feature": "shots",
+          "scenario": "deletingAProjectTakesItsShotsScenario",
+          "fn": "deleteProject",
+          "name": "deletingAProjectTakesItsShotsScenario",
+          "pass": 2
+        }
+      ]
+    },
+    "browser": {
+      "kind": "built",
+      "description": "Maya pushes a legacy shot and sees it against the route, marked as the baseline — the milestone's own gherkin driven as a person.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "mayaSeesHerLegacyBaselineScenario",
+          "name": "mayaSeesHerLegacyBaselineScenario",
+          "pass": 1
+        }
+      ]
+    },
+    "permission": {
+      "kind": "built",
+      "description": "The push is refused to anyone outside the organisation that owns the project, for every step of it — the URL, the registration, the branch it names and the shots it reads back.",
+      "items": [
+        {
+          "feature": "shots",
+          "scenario": "requestShotUploadIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "requestShotUpload",
+          "name": "requestShotUploadIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        },
+        {
+          "feature": "shots",
+          "scenario": "registerShotIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "registerShot",
+          "name": "registerShotIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        },
+        {
+          "feature": "shots",
+          "scenario": "listShotsIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "listShots",
+          "name": "listShotsIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        },
+        {
+          "feature": "shots",
+          "scenario": "declareBranchIsRefusedFromOutsideTheOrganizationScenario",
+          "fn": "declareBranch",
+          "name": "declareBranchIsRefusedFromOutsideTheOrganizationScenario",
+          "pass": 2
+        }
+      ]
+    }
+  },
+  "deferrals": []
+}

@@ -83,6 +83,40 @@ export async function addressesOnScreen(actor: ActorSession): Promise<string> {
   }
 }
 
+/**
+ * Wait until React has actually taken charge of the page.
+ *
+ * `opensPage` returns as soon as the server-rendered HTML is on screen. The client bundle
+ * attaches its handlers roughly a second later, and in that window every control is real,
+ * visible and actionable — so Playwright clicks it, reports success, and NOTHING happens.
+ * No console error, no failed request, no navigation: the failure surfaces later, somewhere
+ * else, as an assertion that times out for no visible reason. Every step that ACTS on the
+ * page waits for this first; steps that only READ it do not need to.
+ *
+ * Readiness is React's own fibre property on a real control, not a timer and not a marker
+ * the app has to render. A sleep would be a guess that gets longer every time it flakes,
+ * and a marker would put a test's needs into a component. `networkidle` is not enough
+ * either — the HTML is idle long before the bundle has hydrated it.
+ */
+export async function interactive(actor: ActorSession, timeout = 15000): Promise<void> {
+  try {
+    await actor.page.waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('button, a, input, textarea, select')).some((node) =>
+          Object.keys(node).some((key) => key.startsWith('__react')),
+        ),
+      undefined,
+      { timeout },
+    )
+  } catch {
+    throw new Error(
+      `The page never hydrated within ${timeout}ms — its controls are on screen but React ` +
+        `has not attached to them, so any click would be swallowed silently. This is a broken ` +
+        `client bundle rather than a slow one; check the browser console for the real error.`,
+    )
+  }
+}
+
 /** The first line of whatever the driver threw, for a step's own failure message. */
 export const underlying = (error: unknown) =>
   error instanceof Error ? error.message.split('\n')[0] : String(error)

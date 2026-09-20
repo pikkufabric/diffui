@@ -57,11 +57,7 @@ export const ShellSettings: FC<{ orientation?: 'vertical' | 'horizontal' }> = ({
   )
 
   if (session.isPending) {
-    return horizontal ? (
-      <Skeleton circle height={30} />
-    ) : (
-      <Skeleton height={52} radius="md" />
-    )
+    return horizontal ? <Skeleton circle height={30} /> : <Skeleton height={52} radius="md" />
   }
 
   const target = horizontal ? (

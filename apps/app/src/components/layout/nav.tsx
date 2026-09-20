@@ -38,6 +38,8 @@ function navGlyph(d: string): NavIcon {
 }
 
 export const HomeGlyph = navGlyph('M3 12 12 4l9 8M5 10v9h5v-6h4v6h5v-9')
+/** Two overlapping frames — a before and an after, which is what a project is. */
+export const ProjectsGlyph = navGlyph('M4 4h10v10H4zM10 10h10v10H10')
 export const AccountGlyph = navGlyph('M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM3 21a7 7 0 0 1 18 0')
 export const SignOutGlyph = navGlyph(
   'M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4',
@@ -60,7 +62,10 @@ export const CheckGlyph = navGlyph('M20 6 9 17l-5-5')
  */
 export function useNavItems(): NavItem[] {
   useLocale()
-  return [{ to: '/app', label: m.nav__home(), Icon: HomeGlyph }]
+  return [
+    { to: '/app', label: m.nav__home(), Icon: HomeGlyph },
+    { to: '/app/projects', label: m.nav__projects(), Icon: ProjectsGlyph },
+  ]
 }
 
 /**

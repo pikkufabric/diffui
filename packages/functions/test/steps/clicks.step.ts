@@ -3,6 +3,7 @@ import { pikkuScenarioStep } from '#pikku/scenarios'
 import {
   ControlInput,
   addressesOnScreen,
+  interactive,
   currentPath,
   selectorFor,
   session,
@@ -37,6 +38,7 @@ export const clicks = pikkuScenarioStep({
   output: ClicksOutput,
   browser: async (_services, input, { browser }) => {
     const actor = session(browser)
+    await interactive(actor)
     try {
       await actor.locate(selectorFor(input)).click()
     } catch (error) {

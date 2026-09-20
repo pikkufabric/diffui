@@ -113,8 +113,17 @@ env.VITE_DEV_ACTOR_SECRETS = await mintDevActorSecrets(
 // `node:sqlite`, which node only ships unflagged from 24 — on anything older this
 // dies with `ERR_UNKNOWN_BUILTIN_MODULE: No such built-in module: node:sqlite`.
 // `--bun` ignores the shebang and runs it on bun, which has that module.
+// `pikku dev` defaults to 3000 and `createConfig` reads API_PORT, so with
+// API_PORT set and no --port the two halves disagree and the API fails to bind
+// — which reads as "port 3000 in use" even though nothing here wanted 3000.
+// Passing it through keeps one answer to which port this app serves on, and
+// leaves the template's default untouched when API_PORT is unset.
 const spawnApi = () =>
-  spawn('bunx', ['--bun', 'pikku', 'dev'], { cwd: root, env, stdio: 'inherit' })
+  spawn(
+    'bunx',
+    ['--bun', 'pikku', 'dev', ...(env.API_PORT ? ['--port', env.API_PORT] : [])],
+    { cwd: root, env, stdio: 'inherit' },
+  )
 const spawnFrontend = () =>
   spawn('bun', ['run', '--filter', '@project/app', 'dev'], { cwd: root, env, stdio: 'inherit' })
 
