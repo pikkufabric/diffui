@@ -1,24 +1,26 @@
+import { useState } from 'react'
 import type { FC } from 'react'
 import type { I18nString } from '@pikku/react'
 import { useForm } from '@tanstack/react-form'
 import { useQueryClient } from '@tanstack/react-query'
 import {
-  Badge,
+  Anchor,
   Box,
   Button,
   Card,
   Group,
-  SimpleGrid,
+  ScrollArea,
   Skeleton,
   Stack,
+  Table,
   Text,
   TextInput,
-  Title,
 } from '@pikku/mantine/core'
 import { Link } from '@tanstack/react-router'
 import { usePikkuMutation, usePikkuQuery } from '@project/functions-sdk/pikku/api.gen'
 import { m, asI18n } from '@/i18n/messages'
 import { useLocale } from '@/i18n/config'
+import { PageHeader } from '@/components/PageHeader'
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/
 
@@ -53,18 +55,25 @@ export const ProjectsPage: FC = () => {
     onSubmit: ({ value }) => create.mutate({ name: value.name.trim(), slug: value.slug.trim() }),
   })
 
-  const rows = projects.data?.projects ?? []
+  const [query, setQuery] = useState('')
+  const all = projects.data?.projects ?? []
+  const needle = query.trim().toLowerCase()
+  const rows = needle
+    ? all.filter(
+        (project) =>
+          project.name.toLowerCase().includes(needle) ||
+          project.slug.toLowerCase().includes(needle),
+      )
+    : all
 
   return (
-    <Box maw={880} w="100%" mx="auto">
-      <Title order={1} fz={24} fw={650} style={{ letterSpacing: '-0.025em' }}>
-        {m.projects__title()}
-      </Title>
-      <Text c="dimmed" size="sm" mt={6} mb="lg" style={{ lineHeight: 1.55 }}>
-        {m.projects__description()}
-      </Text>
+    <Box maw={1080} w="100%" mx="auto">
+      <PageHeader title={m.projects__title()} description={m.projects__description()} />
 
-      <Card withBorder radius="lg" shadow="sm" padding="lg" mb="lg">
+      <Card withBorder radius="lg" padding="lg" mb="lg">
+        <Text fw={600} size="sm" mb="sm">
+          {m.projects__new()}
+        </Text>
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -72,10 +81,11 @@ export const ProjectsPage: FC = () => {
           }}
         >
           <Stack gap="sm">
-            <Group align="flex-start" grow>
+            <Group align="flex-start" gap="sm" wrap="wrap">
               <form.Field name="name" validators={{ onChange: ({ value }) => required(value) }}>
                 {(field) => (
                   <TextInput
+                    style={{ flex: '2 1 220px' }}
                     label={m.projects__field_name()}
                     placeholder={m.projects__field_name_placeholder()}
                     data-testid="project-name"
@@ -90,6 +100,7 @@ export const ProjectsPage: FC = () => {
               <form.Field name="slug" validators={{ onChange: ({ value }) => slugValid(value) }}>
                 {(field) => (
                   <TextInput
+                    style={{ flex: '1 1 180px' }}
                     label={m.projects__field_slug()}
                     placeholder={m.projects__field_slug_placeholder()}
                     data-testid="project-slug"
@@ -100,6 +111,16 @@ export const ProjectsPage: FC = () => {
                   />
                 )}
               </form.Field>
+
+              <Button
+                type="submit"
+                loading={create.isPending}
+                data-testid="project-create"
+                mt={25}
+                style={{ flex: 'none' }}
+              >
+                {m.common__create()}
+              </Button>
             </Group>
 
             {/* Inline beside the control that failed, never a toast — a toast for
@@ -109,22 +130,16 @@ export const ProjectsPage: FC = () => {
                 {m.projects__create_failed()}
               </Text>
             ) : null}
-
-            <Group justify="flex-end">
-              <Button type="submit" loading={create.isPending} data-testid="project-create">
-                {m.projects__new()}
-              </Button>
-            </Group>
           </Stack>
         </form>
       </Card>
 
       {projects.isLoading ? (
         <Stack gap="sm">
-          <Skeleton height={72} radius="lg" />
-          <Skeleton height={72} radius="lg" />
+          <Skeleton height={44} radius="md" />
+          <Skeleton height={44} radius="md" />
         </Stack>
-      ) : rows.length === 0 ? (
+      ) : all.length === 0 ? (
         <Card withBorder radius="lg" padding="xl" data-testid="projects-empty">
           <Stack gap={4} align="center">
             <Text fw={600}>{m.projects__empty_title()}</Text>
@@ -134,54 +149,83 @@ export const ProjectsPage: FC = () => {
           </Stack>
         </Card>
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" data-testid="projects-list">
-          {rows.map((project) => (
-            <Card
-              key={project.projectId}
-              withBorder
-              radius="lg"
-              padding="lg"
-              data-testid="project-card"
-              data-slug={project.slug}
-            >
-              <Stack gap="xs">
-                <Group justify="space-between" wrap="nowrap">
-                  <Text fw={600} data-testid="project-card-name">
-                    {asI18n(project.name)}
-                  </Text>
-                  <Badge variant="light">{asI18n(project.slug)}</Badge>
-                </Group>
-                <Group gap={6}>
-                  <Badge size="sm" variant="default">
-                    {asI18n(project.baselineLabel)}
-                  </Badge>
-                  <Badge size="sm" variant="default">
-                    {asI18n(project.targetLabel)}
-                  </Badge>
-                </Group>
-                {/* `renderRoot` rather than `component={Link}`: passing Link as
-                    `component` erases TanStack's route generics, so `params`
-                    stops type-checking against the route it belongs to and a
-                    typo in a param name becomes a runtime 404. This keeps both
-                    type systems intact. */}
-                <Button
-                  variant="light"
-                  mt="xs"
-                  data-testid="project-open"
-                  renderRoot={(props) => (
-                    <Link
-                      to="/app/projects/$projectId"
-                      params={{ projectId: project.projectId }}
-                      {...props}
-                    />
-                  )}
-                >
-                  {m.projects__open()}
-                </Button>
-              </Stack>
-            </Card>
-          ))}
-        </SimpleGrid>
+        <Card withBorder radius="lg" padding={0}>
+          <Group justify="space-between" p="md" gap="sm">
+            <TextInput
+              placeholder={m.projects__search()}
+              aria-label={m.projects__search()}
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              data-testid="projects-search"
+              style={{ flex: '1 1 260px', maxWidth: 360 }}
+            />
+            <Text size="xs" c="dimmed">
+              {m.projects__count({ count: rows.length })}
+            </Text>
+          </Group>
+          {rows.length === 0 ? (
+            <Text c="dimmed" size="sm" ta="center" pb="lg">
+              {m.projects__search_empty()}
+            </Text>
+          ) : (
+            <ScrollArea type="auto">
+              <Table highlightOnHover verticalSpacing="sm" data-testid="projects-list">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th pl="md">{m.projects__col_name()}</Table.Th>
+                    <Table.Th visibleFrom="sm">{m.projects__field_slug()}</Table.Th>
+                    <Table.Th visibleFrom="sm">{m.projects__col_sides()}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {rows.map((project) => (
+                    <Table.Tr
+                      key={project.projectId}
+                      data-testid="project-card"
+                      data-slug={project.slug}
+                    >
+                      <Table.Td pl="md">
+                        {/* `renderRoot` rather than `component={Link}`: passing Link as
+                            `component` erases TanStack's route generics, so `params`
+                            stops type-checking against the route it belongs to. */}
+                        <Anchor
+                          fw={600}
+                          size="sm"
+                          c="var(--mantine-color-text)"
+                          underline="hover"
+                          data-testid="project-open"
+                          style={{ overflowWrap: 'anywhere' }}
+                          renderRoot={(props) => (
+                            <Link
+                              to="/app/projects/$projectId"
+                              params={{ projectId: project.projectId }}
+                              {...props}
+                            />
+                          )}
+                        >
+                          <span data-testid="project-card-name">{asI18n(project.name)}</span>
+                        </Anchor>
+                        <Text size="xs" c="dimmed" ff="monospace" hiddenFrom="sm">
+                          {asI18n(project.slug)}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td visibleFrom="sm">
+                        <Text size="xs" c="dimmed" ff="monospace">
+                          {asI18n(project.slug)}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td visibleFrom="sm">
+                        <Text size="xs" c="dimmed">
+                          {asI18n(`${project.baselineLabel} → ${project.targetLabel}`)}
+                        </Text>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
+        </Card>
       )}
     </Box>
   )

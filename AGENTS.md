@@ -9,7 +9,7 @@ roles, naming every edit that removal needs.
 
 ## Routing
 
-Three fixed slots, so a URL means the same thing in every app built from this template:
+Three fixed slots, so a URL always means the same thing:
 
 - **`/api`** — the API. Better Auth lives under `/api/auth/*`.
 - **`/app`** — the signed-in application. EVERY screen you build goes under here
@@ -44,7 +44,7 @@ Three fixed slots, so a URL means the same thing in every app built from this te
   role that only changes which BUTTONS appear is a permission, enforced in the function's
   `permissions` field.
 
-- **`/`** — the marketing homepage. Everything outside `/app` is brand register. The starter has none, so `/` redirects to `/app` and the
+- **`/`** — the marketing homepage. Everything outside `/app` is brand register. diffui has none yet, so `/` redirects to `/app` and the
   app's own gate forwards a signed-out visitor to `/app/auth/login`. Building a landing page means
   replacing `src/routes/index.tsx` with a component; nothing else changes.
 

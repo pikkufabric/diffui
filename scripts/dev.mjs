@@ -117,7 +117,7 @@ env.VITE_DEV_ACTOR_SECRETS = await mintDevActorSecrets(
 // API_PORT set and no --port the two halves disagree and the API fails to bind
 // — which reads as "port 3000 in use" even though nothing here wanted 3000.
 // Passing it through keeps one answer to which port this app serves on, and
-// leaves the template's default untouched when API_PORT is unset.
+// leaves pikku's default untouched when API_PORT is unset.
 const spawnApi = () =>
   spawn(
     'bunx',

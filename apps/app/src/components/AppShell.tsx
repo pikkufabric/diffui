@@ -10,11 +10,12 @@ import { ShellSettings } from './layout/ShellSettings'
 import { TAB_BAR_FOOT } from './layout/mobileLayout'
 
 /**
- * STARTER-SHELL-DEFAULT — the marker for "this app never picked a silhouette", read
- * by the orchestrator's init-app-chrome (which pre-writes a real shell over it) and
- * by the build-complete gate (which refuses a build still wearing it). Every
- * `fabric scaffold --name shell` recipe replaces this file, so the marker's absence
- * means a silhouette was chosen. Don't delete it to silence the gate — pick a shell.
+ * diffui's shell: a quiet sidebar on desktop, a foot tab bar on a phone.
+ *
+ * Deliberately plain. The screens diffui exists for are other apps' screenshots,
+ * and chrome that competes with them makes a difference harder to see
+ * (knowledge/decisions/design/neutral-because-the-images-are-the-interface.md).
+ * The nav is two destinations, so the tab bar fits a thumb without a drawer.
  */
 export const AppShell: FC = () => {
   useLocale()

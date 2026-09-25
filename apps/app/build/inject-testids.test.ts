@@ -102,7 +102,7 @@ test('a plain helper function is not a component', () => {
 
 // Babel reaches the component before its JSX, so without an explicit guard the container
 // rule stamps the root first and the control rule then sees it as already claimed. Found on
-// the template's own ThemeSelector, whose root IS the Select.
+// the app's own ThemeSelector, whose root IS the Select.
 test('a component whose root is a control keeps the control key, not the component name', () => {
   assert.deepEqual(
     ids('function ThemeSelector() { return <Select aria-label={m.preferences__theme()} /> }'),

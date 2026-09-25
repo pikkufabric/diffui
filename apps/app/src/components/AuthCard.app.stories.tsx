@@ -26,7 +26,7 @@ export default {
 } satisfies AppStoryMeta
 
 const base = {
-  appName: asI18n('Acme'),
+  appName: asI18n('diffui'),
   title: asI18n('Welcome back'),
   description: asI18n('Sign in to continue.'),
   cta: asI18n('Sign in'),

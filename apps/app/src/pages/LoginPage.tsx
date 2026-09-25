@@ -33,7 +33,7 @@ export const LoginPage: FC = () => {
       <AuthCard
         appName={appName}
         title={m.auth__login__title()}
-        description={m.auth__login__description({ name: appName })}
+        description={m.auth__login__description()}
         cta={m.auth__login__cta()}
         passwordAutoComplete="current-password"
         busy={signIn.isPending}

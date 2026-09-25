@@ -104,6 +104,9 @@ export const NavList: FC<{ items: NavItem[]; onNavigate?: () => void }> = ({
           key={to}
           component={Link}
           to={to}
+          /* The router's own fuzzy match would mark `/app` active under every child
+             route and light two rows at once; `active` below is the one source. */
+          activeOptions={{ exact: true }}
           label={label}
           leftSection={<Icon />}
           active={to === activePath}

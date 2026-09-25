@@ -42,7 +42,7 @@ export const SignupPage: FC = () => {
     <AuthCard
       appName={appName}
       title={m.auth__signup__title()}
-      description={m.auth__signup__description({ name: appName })}
+      description={m.auth__signup__description()}
       cta={m.auth__signup__cta()}
       includeName
       passwordAutoComplete="new-password"

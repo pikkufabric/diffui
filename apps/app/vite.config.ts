@@ -8,11 +8,11 @@ import { testIds } from './build/testids.plugin'
 
 const base = process.env.FABRIC_FRONTEND_BASE || '/'
 
-// Plain TanStack Start config (Node target) — used for local sandbox dev. This
-// template is deploy-provider agnostic: it ships NO @cloudflare/vite-plugin. At
+// Plain TanStack Start config (Node target) — used for local sandbox dev. The
+// app is deploy-provider agnostic: it ships NO @cloudflare/vite-plugin. At
 // deploy, fabric CI injects the CF adapter (vite.config.cf.ts merges cloudflare()
 // on top of this config) to emit the CF Workers SSR bundle. Do not add cloudflare
-// here — that would double-apply it and couple the template to a provider.
+// here — that would double-apply it and couple the app to a provider.
 export default defineConfig({
   base,
   plugins: [

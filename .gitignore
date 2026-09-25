@@ -30,5 +30,5 @@ __fabric_scaffold.vite.config.mjs
 .pikku
 .reports
 
-# Agent critique/review scratch — local to a working copy, never part of the template
+# Agent critique/review scratch — local to a working copy, never committed
 .impeccable

@@ -21,7 +21,7 @@ export default {
 } satisfies StoryMeta
 
 const base = {
-  appName: asI18n('Acme'),
+  appName: asI18n('diffui'),
   footer: asI18n('New here? Create an account'),
 }
 
@@ -32,7 +32,7 @@ export const SignIn: Story = {
     description: asI18n('Sign in to continue.'),
     children: (
       <Stack gap="sm">
-        <TextInput label={asI18n('Email')} placeholder={asI18n('you@acme.com')} />
+        <TextInput label={asI18n('Email')} placeholder={asI18n('you@example.com')} />
         <Button fullWidth>{asI18n('Sign in')}</Button>
       </Stack>
     ),
@@ -46,7 +46,7 @@ export const ForgotPassword: Story = {
     description: asI18n('We will email you a link to choose a new one.'),
     children: (
       <Stack gap="sm">
-        <TextInput label={asI18n('Email')} placeholder={asI18n('you@acme.com')} />
+        <TextInput label={asI18n('Email')} placeholder={asI18n('you@example.com')} />
         <Button fullWidth>{asI18n('Send reset link')}</Button>
       </Stack>
     ),

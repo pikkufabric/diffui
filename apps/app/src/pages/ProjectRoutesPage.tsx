@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import {
+  Anchor,
   Badge,
   Box,
   Button,
@@ -7,17 +8,19 @@ import {
   Group,
   Image,
   ScrollArea,
+  SimpleGrid,
   Skeleton,
   Stack,
   Table,
   Text,
-  Title,
   Tooltip,
 } from '@pikku/mantine/core'
 import { Link, useParams } from '@tanstack/react-router'
 import { usePikkuQuery } from '@project/functions-sdk/pikku/api.gen'
 import { m, asI18n } from '@/i18n/messages'
 import { useLocale } from '@/i18n/config'
+import { CrumbAnchor, PageHeader } from '@/components/PageHeader'
+import { SummaryBar } from '@/components/diff/SummaryBar'
 
 type Coverage = 'present' | 'absent' | 'unmapped'
 
@@ -42,6 +45,50 @@ const COVERAGE: Record<
   unmapped: { label: m.coverage__unmapped, hint: m.coverage__unmapped_hint, color: 'yellow' },
 }
 
+/** One rebuild's standing, linking to its report — the project's "how far along" at a glance. */
+const RebuildCard: FC<{ projectId: string; branch: { key: string; label: string } }> = ({
+  projectId,
+  branch,
+}) => {
+  const report = usePikkuQuery('projectReport', { projectId, branchKey: branch.key })
+  return (
+    <Card withBorder radius="lg" padding="md" data-testid="project-rebuild" data-key={branch.key}>
+      <Group justify="space-between" mb="xs" wrap="nowrap" gap="xs">
+        <Text fw={600} size="sm" truncate>
+          {asI18n(branch.label)}
+        </Text>
+        <Anchor
+          size="xs"
+          style={{ flex: 'none' }}
+          renderRoot={(props) => (
+            <Link
+              to="/app/projects/$projectId/report"
+              params={{ projectId }}
+              search={{ branch: branch.key }}
+              {...props}
+            />
+          )}
+        >
+          {m.report__view()}
+        </Anchor>
+      </Group>
+      {report.data ? (
+        <>
+          <Text size="xs" c="dimmed" mb={6}>
+            {m.summary__scored({
+              scored: report.data.summary.scored,
+              screens: report.data.rows.length,
+            })}
+          </Text>
+          <SummaryBar summary={report.data.summary} screens={report.data.rows.length} size="sm" />
+        </>
+      ) : (
+        <Skeleton height={8} radius="xl" />
+      )}
+    </Card>
+  )
+}
+
 /**
  * One project's routes, each with what is known about it on the legacy side.
  *
@@ -56,6 +103,7 @@ export const ProjectRoutesPage: FC = () => {
   const project = usePikkuQuery('getProject', { projectId })
   const routes = usePikkuQuery('listRoutes', { projectId })
   const shots = usePikkuQuery('listShots', { projectId })
+  const branches = usePikkuQuery('listBranches', { projectId })
 
   /* A project in another organisation and a project that does not exist fail the
      same way, and say the same thing — a distinguishable "no such project" tells
@@ -91,31 +139,45 @@ export const ProjectRoutesPage: FC = () => {
 
   return (
     <Box maw={1080} w="100%" mx="auto" data-testid="project-detail">
-      <Group justify="space-between" align="flex-start" wrap="nowrap">
-        <Title order={1} fz={24} fw={650} style={{ letterSpacing: '-0.025em' }}>
-          {project.data ? asI18n(project.data.project.name) : m.common__loading()}
-        </Title>
-        <Button
-          variant="light"
-          size="sm"
-          data-testid="project-report-open"
-          renderRoot={(props) => (
-            <Link to="/app/projects/$projectId/report" params={{ projectId }} {...props} />
-          )}
-        >
-          {m.report__view()}
-        </Button>
-      </Group>
-      <Text c="dimmed" size="sm" mt={6} style={{ lineHeight: 1.55 }}>
-        {m.project__routes_description()}
-      </Text>
+      <PageHeader
+        crumbs={[
+          {
+            label: m.nav__projects(),
+            render: (label) => (
+              <CrumbAnchor renderRoot={(props) => <Link to="/app/projects" {...props} />}>
+                {label}
+              </CrumbAnchor>
+            ),
+          },
+        ]}
+        title={project.data ? asI18n(project.data.project.name) : m.common__loading()}
+        description={m.project__routes_description()}
+        actions={
+          <Button
+            variant="light"
+            size="sm"
+            data-testid="project-report-open"
+            renderRoot={(props) => (
+              <Link to="/app/projects/$projectId/report" params={{ projectId }} {...props} />
+            )}
+          >
+            {m.report__view()}
+          </Button>
+        }
+      />
 
-      <Group gap={6} mt="md" mb="lg">
+      <Group gap={6} mb="lg">
+        <Text size="xs" c="dimmed" mr={2}>
+          {m.project__viewports_label()}
+        </Text>
         {(project.data?.viewports ?? []).map((viewport) => (
           <Badge
             key={viewport.viewportId}
             variant="default"
             size="sm"
+            radius="sm"
+            tt="none"
+            fw={500}
             data-testid="project-viewport"
           >
             {asI18n(`${viewport.label} ${viewport.width}×${viewport.height}`)}
@@ -123,16 +185,58 @@ export const ProjectRoutesPage: FC = () => {
         ))}
         {coverage ? (
           <>
-            <Badge variant="light" size="sm" data-testid="coverage-present">
+            <Badge
+              variant="light"
+              size="sm"
+              radius="sm"
+              tt="none"
+              fw={500}
+              data-testid="coverage-present"
+            >
               {asI18n(`${coverage.present} ${m.coverage__present()}`)}
             </Badge>
-            <Badge variant="light" size="sm" color="yellow" data-testid="coverage-unmapped">
-              {asI18n(`${coverage.unmapped} ${m.coverage__unmapped()}`)}
-            </Badge>
+            {/* Only when there is something unanswered: "0 not mapped" in a warning
+                colour reads as a problem that is not there. */}
+            {coverage.unmapped > 0 ? (
+              <Badge
+                variant="light"
+                size="sm"
+                radius="sm"
+                tt="none"
+                fw={500}
+                color="yellow"
+                data-testid="coverage-unmapped"
+              >
+                {asI18n(`${coverage.unmapped} ${m.coverage__unmapped()}`)}
+              </Badge>
+            ) : null}
           </>
         ) : null}
       </Group>
 
+      <Text fw={600} mb="xs">
+        {m.project__rebuilds_title()}
+      </Text>
+      {branches.data && branches.data.branches.length > 0 ? (
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, md: 3 }}
+          spacing="md"
+          mb="xl"
+          data-testid="project-rebuilds"
+        >
+          {branches.data.branches.map((branch) => (
+            <RebuildCard key={branch.branchId} projectId={projectId} branch={branch} />
+          ))}
+        </SimpleGrid>
+      ) : (
+        <Text size="sm" c="dimmed" mb="xl">
+          {branches.isLoading ? m.common__loading() : m.project__rebuilds_empty()}
+        </Text>
+      )}
+
+      <Text fw={600} mb="xs">
+        {m.project__routes_title()}
+      </Text>
       {routes.isLoading ? (
         <Stack gap="sm">
           <Skeleton height={44} radius="md" />
@@ -148,17 +252,17 @@ export const ProjectRoutesPage: FC = () => {
           </Stack>
         </Card>
       ) : (
-        /* The table is the one thing allowed to overflow sideways — three paths
-           will not fit a phone, and truncating a URL makes it unreadable. */
+        /* Below `md` the two path columns fold into the route cell, so the table
+           fits a phone; the scroll area stays for a very long key. */
         <Card withBorder radius="lg" padding={0}>
           <ScrollArea type="auto">
-            <Table striped highlightOnHover miw={720} data-testid="routes-table">
+            <Table striped highlightOnHover data-testid="routes-table">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>{m.project__col_route()}</Table.Th>
-                  <Table.Th>{m.project__col_legacy()}</Table.Th>
-                  <Table.Th>{m.project__col_new()}</Table.Th>
-                  <Table.Th>{m.project__col_coverage()}</Table.Th>
+                  <Table.Th visibleFrom="md">{m.project__col_legacy()}</Table.Th>
+                  <Table.Th visibleFrom="md">{m.project__col_new()}</Table.Th>
+                  <Table.Th visibleFrom="sm">{m.project__col_coverage()}</Table.Th>
                   <Table.Th>{m.project__col_baseline()}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
@@ -176,14 +280,27 @@ export const ProjectRoutesPage: FC = () => {
                           <Text c="dimmed" size="xs" ff="monospace" data-testid="route-key">
                             {asI18n(route.key)}
                           </Text>
+                          {/* The paths columns do not fit a phone; the legacy path,
+                              the one an engineer checks against, moves in here. */}
+                          {route.legacyPath ? (
+                            <Text
+                              c="dimmed"
+                              size="xs"
+                              ff="monospace"
+                              hiddenFrom="md"
+                              style={{ overflowWrap: 'anywhere' }}
+                            >
+                              {asI18n(route.legacyPath)}
+                            </Text>
+                          ) : null}
                         </Stack>
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td visibleFrom="md">
                         <Text size="xs" ff="monospace" c={route.legacyPath ? undefined : 'dimmed'}>
                           {asI18n(route.legacyPath ?? '—')}
                         </Text>
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td visibleFrom="md">
                         {route.newPath ? (
                           <Text size="xs" ff="monospace">
                             {asI18n(route.newPath)}
@@ -196,7 +313,7 @@ export const ProjectRoutesPage: FC = () => {
                           </Badge>
                         )}
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td visibleFrom="sm">
                         <Tooltip label={state.hint()} withArrow position="left">
                           <Badge
                             size="sm"
@@ -221,7 +338,12 @@ export const ProjectRoutesPage: FC = () => {
                               radius="sm"
                               data-testid="baseline-shot"
                             />
-                            <Badge size="sm" variant="light" data-testid="baseline-badge">
+                            <Badge
+                              size="sm"
+                              variant="light"
+                              visibleFrom="sm"
+                              data-testid="baseline-badge"
+                            >
                               {m.baseline__badge()}
                             </Badge>
                           </Group>

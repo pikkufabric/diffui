@@ -234,7 +234,7 @@ export const theme = activeTheme
 
 // The natural color scheme each theme declares, so the app can seed
 // ColorSchemeScript + MantineProvider to match (a light style boots light, a dark
-// style dark). Defaults to 'dark' (the template's historical default).
+// style dark). Defaults to 'dark'.
 export type ColorScheme = 'light' | 'dark' | 'auto'
 export const themeColorSchemes: Record<string, ColorScheme> = Object.fromEntries(
   Object.entries(specs).map(([id, s]) => [id, s.structure?.defaultColorScheme ?? 'dark']),

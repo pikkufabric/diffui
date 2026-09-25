@@ -13,8 +13,8 @@ export default {
   },
 } satisfies StoryMeta
 
-export const Default: Story = { args: { name: asI18n('Acme') } }
+export const Default: Story = { args: { name: asI18n('diffui') } }
 
-export const Large: Story = { args: { name: asI18n('Acme'), size: 48 } }
+export const Large: Story = { args: { name: asI18n('diffui'), size: 48 } }
 
 export const LongName: Story = { args: { name: asI18n('Northwind Logistics') } }
