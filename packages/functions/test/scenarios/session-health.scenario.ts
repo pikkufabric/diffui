@@ -12,18 +12,16 @@ import { pikkuScenario } from '#pikku/scenarios'
  * session cookie, authed RPC, and session mapping in one pass — a ready-made
  * health check for staging or production.
  *
- * It is deliberately actor-AGNOSTIC: it uses the starter's `visitor` if present,
- * else the first actor the app defines. So when you replace the seeded `visitor`
- * with your own role actors (admin/operator/…), this keeps working untouched —
- * never edit it just to name a different actor.
+ * It is deliberately actor-AGNOSTIC: it signs in whichever actor the app defines
+ * first (`maya` today), so adding or renaming a persona never breaks it — never
+ * edit it just to name a different actor.
  */
 export const sessionHealthScenario = pikkuScenario<void, { email: string; userId: string }>({
   title: 'Session health (scenario)',
   tags: ['scenario'],
   func: async ({ logger }, _input, { scenario, actors }) => {
-    // Actor-AGNOSTIC on purpose: use whatever actor the app defines (the starter's
-    // `visitor`, or your first role actor once you replace it). Never reference a
-    // specific actor by name here — that is what forces an edit when the actor set
+    // Actor-AGNOSTIC on purpose: use whatever actor the app defines first. Never
+    // reference a specific actor by name here — that is what forces an edit when the actor set
     // changes, and the fix is a robust scenario, not a renamed one.
     const [actor] = Object.values(actors ?? {})
     if (!actor) {

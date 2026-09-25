@@ -35,7 +35,7 @@ export const createSingletonServices = pikkuServices(async (config, existingServ
   // audit service; locally it falls back to a no-op so nothing is persisted.
   const audit = existingServices?.audit ?? new NoopAuditService()
   // kysely is injected by pikku dev (node:sqlite) or the CF Worker workflow (libsql).
-  // The template never constructs its own dialect — dialects are fabric/runtime
+  // The app never constructs its own dialect — dialects are fabric/runtime
   // concerns — so it must always be provided by the runtime.
   if (!existingServices?.kysely) {
     throw new Error('kysely service was not injected by the runtime (pikku dev / fabric)')
@@ -45,7 +45,7 @@ export const createSingletonServices = pikkuServices(async (config, existingServ
   // Per-user credential store (wire.getCredential) — needed by addons imported
   // with --auth per-user/delegated. A deployed stage injects it: credentials are
   // sealed to the stage, and only its secrets Worker holds the key. There is no
-  // fallback because there is no key to fall back to — the template used to
+  // fallback because there is no key to fall back to — this file used to
   // build a `KyselyCredentialService` from a `CREDENTIALS_KEY` secret, which was
   // the stage's own KEK handed to every unit. Outside a stage the app runs fine
   // and credential-using addon calls fail with a clear error from the addon's

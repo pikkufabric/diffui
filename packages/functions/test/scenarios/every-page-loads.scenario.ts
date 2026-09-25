@@ -11,10 +11,9 @@
  * build. Behaviour scenarios that create, edit or delete belong in their own
  * feature, untagged `smoke`, so the fast gate stays fast and deterministic.
  *
- * `actors.maya` below is the template's PLACEHOLDER persona. When you replace it
- * with this app's real roles (see AGENTS.md), swap both references here for your
- * primary role — this scenario must name one literally, because PKU677 requires a
- * browser step's actor to be a literal `actors.<name>`.
+ * `actors.maya` below is diffui's primary persona — the engineer running a
+ * rebuild. It is named literally because PKU677 requires a browser step's actor
+ * to be a literal `actors.<name>`.
  */
 import { pikkuScenario } from '#pikku/scenarios'
 

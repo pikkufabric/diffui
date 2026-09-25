@@ -15,6 +15,7 @@
 import { z } from 'zod'
 import { pikkuFunc } from '#pikku/function'
 import { canReachProject } from '../permissions.js'
+import { buildReport } from '../lib/report.js'
 
 const RowStatus = z.enum([
   /** Both sides captured; the pixels agree. */
@@ -88,133 +89,9 @@ export const projectReport = pikkuFunc({
       throw new Error(`This project declares no branch called \`${input.branchKey}\`.`)
     }
 
-    /* Every declared coordinate, whether or not anything was ever captured at
-       it. Starting from the shots instead would make the report silent about
-       exactly the screens the rebuild has not reached — which is half of what
-       it is for. */
-    const coordinates = await kysely
-      .selectFrom('route')
-      .innerJoin('routeState', 'routeState.routeId', 'route.routeId')
-      .innerJoin('viewport', 'viewport.projectId', 'route.projectId')
-      .select([
-        'route.routeId as routeId',
-        'route.key as routeKey',
-        'route.label as routeLabel',
-        'route.legacyPath as legacyPath',
-        'route.legacyAbsent as legacyAbsent',
-        'routeState.stateId as stateId',
-        'routeState.key as stateKey',
-        'viewport.viewportId as viewportId',
-        'viewport.key as viewportKey',
-      ])
-      .where('route.projectId', '=', input.projectId)
-      .orderBy('route.sort', 'asc')
-      .orderBy('routeState.sort', 'asc')
-      .orderBy('viewport.sort', 'asc')
-      .execute()
-
-    const baselines = await kysely
-      .selectFrom('shot')
-      .select(['shotId', 'routeId', 'stateId', 'viewportId'])
-      .where('projectId', '=', input.projectId)
-      .where('side', '=', 'legacy')
-      .where('isBaseline', '=', true)
-      .execute()
-
-    const targets = await kysely
-      .selectFrom('shot')
-      .select(['shotId', 'routeId', 'stateId', 'viewportId'])
-      .where('projectId', '=', input.projectId)
-      .where('branchId', '=', branch.branchId)
-      .orderBy('capturedAt', 'desc')
-      .execute()
-
-    const comparisons = await kysely
-      .selectFrom('comparison')
-      .select([
-        'baselineShotId',
-        'targetShotId',
-        'status',
-        'diffPixels',
-        'comparedPixels',
-        'diffRatio',
-      ])
-      .where('projectId', '=', input.projectId)
-      .execute()
-
-    const at = (row: { routeId: string; stateId: string; viewportId: string }) =>
-      `${row.routeId}/${row.stateId}/${row.viewportId}`
-    const baselineAt = new Map(baselines.map((row) => [at(row), row]))
-    /* Most recent wins: `targets` is ordered by capture time descending and the
-       first write for a coordinate is kept. */
-    const targetAt = new Map<string, (typeof targets)[number]>()
-    for (const row of targets) {
-      if (!targetAt.has(at(row))) targetAt.set(at(row), row)
-    }
-    const comparisonAt = new Map(
-      comparisons.map((row) => [`${row.baselineShotId}/${row.targetShotId}`, row]),
-    )
-
-    const rows = coordinates.map((coordinate) => {
-      const baseline = baselineAt.get(at(coordinate))
-      const target = targetAt.get(at(coordinate))
-      const comparison =
-        baseline && target ? comparisonAt.get(`${baseline.shotId}/${target.shotId}`) : undefined
-
-      const base = {
-        routeKey: coordinate.routeKey,
-        routeLabel: coordinate.routeLabel,
-        stateKey: coordinate.stateKey,
-        viewportKey: coordinate.viewportKey,
-        diffPixels: null as number | null,
-        comparedPixels: null as number | null,
-        diffRatio: null as number | null,
-      }
-
-      if (comparison) {
-        return {
-          ...base,
-          status: comparison.status as 'identical' | 'different' | 'size-mismatch',
-          diffPixels: comparison.diffPixels,
-          comparedPixels: comparison.comparedPixels,
-          diffRatio: comparison.diffRatio,
-        }
-      }
-
-      /* The order of these three matters. "Legacy does not have this screen" is
-         a fact someone asserted; "nobody has mapped it" is an open question; and
-         only once neither applies is a missing baseline the story. Collapsing
-         them would tell a team it has covered a screen nobody has looked at. */
-      if (coordinate.legacyAbsent) return { ...base, status: 'legacy-absent' as const }
-      if (!coordinate.legacyPath) return { ...base, status: 'unmapped' as const }
-      if (!baseline) return { ...base, status: 'no-baseline' as const }
-      return { ...base, status: 'not-built' as const }
-    })
-
-    /* Worst first, because the ordering IS the work queue: the screens most
-       wrong come first, and the gaps sit behind the scored rows rather than
-       interleaved with them. */
-    const RANK: Record<string, number> = { different: 0, 'size-mismatch': 1, identical: 2 }
-    const rank = (status: string) => RANK[status] ?? 3
-    rows.sort((a, b) => rank(a.status) - rank(b.status) || (b.diffRatio ?? 0) - (a.diffRatio ?? 0))
-
-    const count = (status: string) => rows.filter((row) => row.status === status).length
-    const identical = count('identical')
-    const different = count('different')
-
     return {
       branch: { key: branch.key, label: branch.label },
-      rows,
-      summary: {
-        scored: identical + different,
-        identical,
-        different,
-        sizeMismatch: count('size-mismatch'),
-        notBuilt: count('not-built'),
-        noBaseline: count('no-baseline'),
-        legacyAbsent: count('legacy-absent'),
-        unmapped: count('unmapped'),
-      },
+      ...(await buildReport(kysely, input.projectId, branch.branchId)),
     }
   },
 })
@@ -248,6 +125,18 @@ export const RouteComparisonOutput = z.object({
   baseline: ImageRef.nullable(),
   target: ImageRef.nullable(),
   diff: z.object({ assetUrl: z.string() }).nullable(),
+  /**
+   * Where the pages differ in structure: stretches of rows that changed, that
+   * only legacy has, or that only this rebuild has, with the y-range on each
+   * image. Empty when the rows lined up one-for-one.
+   */
+  regions: z.array(
+    z.object({
+      kind: z.enum(['changed', 'added', 'removed']),
+      baseline: z.object({ y: z.number(), height: z.number() }),
+      target: z.object({ y: z.number(), height: z.number() }),
+    }),
+  ),
 })
 
 /**
@@ -344,7 +233,14 @@ export const routeComparison = pikkuFunc({
       baseline && target
         ? await kysely
             .selectFrom('comparison')
-            .select(['status', 'diffPixels', 'comparedPixels', 'diffRatio', 'diffContentKey'])
+            .select([
+              'status',
+              'diffPixels',
+              'comparedPixels',
+              'diffRatio',
+              'diffContentKey',
+              'regions',
+            ])
             .where('baselineShotId', '=', baseline.shotId)
             .where('targetShotId', '=', target.shotId)
             .executeTakeFirst()
@@ -379,6 +275,7 @@ export const routeComparison = pikkuFunc({
       diff: comparison?.diffContentKey
         ? { assetUrl: await sign('diffs', comparison.diffContentKey) }
         : null,
+      regions: comparison ? JSON.parse(comparison.regions) : [],
     }
   },
 })

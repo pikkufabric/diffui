@@ -36,7 +36,10 @@ percentage derived from them. A number you cannot check is a number you have to
 trust, and the denominator is exactly where a diff tool quietly lies — by
 resizing, by padding, by comparing an intersection and not saying so.
 
-When two images are not the same size the comparison is recorded as
-`size-mismatch` and **no score is invented**. Resizing to force a comparison
+Nothing is ever resized. Two images of different **widths** are recorded as
+`size-mismatch` and **no score is invented** — resizing to force a comparison
 would produce a number made partly of interpolation, which looks like a measure
-and is not one.
+and is not one. Two images of different **heights** are
+[aligned row by row](../decisions/pages-are-aligned-before-they-are-compared.md)
+and compared where they line up; `compared_pixels` then counts the aligned rows,
+so the denominator still says exactly what the number was taken over.

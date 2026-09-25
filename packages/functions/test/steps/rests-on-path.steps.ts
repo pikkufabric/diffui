@@ -21,8 +21,7 @@ export const RestsOnPathOutput = z.object({
  * (PKU680).
  *
  * It asserts on the URL rather than page copy because every scaffolded app
- * rewrites its own copy; the route guard's behaviour is what the template can
- * still speak for. The match is exact rather than a prefix on purpose — the
+ * rewrites its own copy; the route guard's behaviour is what stays stable. The match is exact rather than a prefix on purpose — the
  * redirect this exists to catch is `/app` → `/app/auth/login`, which any prefix test
  * would happily accept.
  */

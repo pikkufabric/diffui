@@ -1,0 +1,13 @@
+-- The aligned diff's regions.
+--
+-- A comparison no longer requires both screenshots to be the same height: the
+-- rows are aligned first, as a text diff aligns lines, so a rebuild whose page
+-- grew by one section still pairs every other section with legacy's. What the
+-- alignment could not match one-for-one is kept here — each stretch of rows
+-- that changed, that only legacy has, or that only the rebuild has, with its
+-- y-range on BOTH images — so the route screen can say where a section went
+-- missing rather than only that the pixels differ.
+--
+-- JSON rather than a child table: the regions are only ever read whole, with
+-- the comparison they belong to, and are replaced whenever it is.
+alter table "comparison" add column "regions" text not null default '[]';

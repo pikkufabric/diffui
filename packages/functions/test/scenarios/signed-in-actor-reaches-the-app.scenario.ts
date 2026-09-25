@@ -14,10 +14,9 @@
  * it as an API scenario against `/api/auth/sign-in/email`, which is where a
  * wrong password is actually refused.
  *
- * `actors.maya` below is the template's PLACEHOLDER persona. When you replace it
- * with this app's real roles (see AGENTS.md), swap all four references here for your
- * primary role — this scenario must name one literally, because PKU677 requires a
- * browser step's actor to be a literal `actors.<name>`.
+ * `actors.maya` below is diffui's primary persona — the engineer running a
+ * rebuild. It is named literally because PKU677 requires a browser step's actor
+ * to be a literal `actors.<name>`.
  */
 import { pikkuScenario } from '#pikku/scenarios'
 

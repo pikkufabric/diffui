@@ -7,7 +7,7 @@ tags: [okf, design]
 
 # Neutral, because the images are the interface
 
-The app keeps the template's **Neutral** theme: a deliberately unopinionated
+diffui uses the **Neutral** theme: a deliberately unopinionated
 monochrome scaffold.
 
 This is a choice, not a default left unexamined — the difference matters, because

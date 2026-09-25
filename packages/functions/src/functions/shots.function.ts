@@ -389,6 +389,7 @@ const scoreAgainstBaseline = async (
         comparedPixels: outcome.comparedPixels,
         diffRatio: outcome.diffRatio,
         diffContentKey,
+        regions: JSON.stringify(outcome.regions),
         createdAt: now,
       })
       .onConflict((oc) =>
@@ -398,6 +399,7 @@ const scoreAgainstBaseline = async (
           comparedPixels: outcome.comparedPixels,
           diffRatio: outcome.diffRatio,
           diffContentKey,
+          regions: JSON.stringify(outcome.regions),
           createdAt: now,
         }),
       )

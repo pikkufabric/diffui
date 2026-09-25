@@ -15,7 +15,8 @@
     "tsc": "bun run --filter '*' tsc",
     "lint": "oxlint apps packages",
     "format": "oxfmt apps packages",
-    "format:check": "oxfmt --check apps packages"
+    "format:check": "oxfmt --check apps packages",
+    "test": "bun run --filter \"@project/functions\" test"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",

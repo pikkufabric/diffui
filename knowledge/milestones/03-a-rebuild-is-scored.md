@@ -19,9 +19,11 @@ comparison is always legacy against one branch, and two branches never meet.
 
 The score is [auditable](../entities/shot.md) — the differing pixel count and
 the total are both kept, so the percentage can be checked rather than trusted.
-When the two images are not the same size the comparison says `size-mismatch`
+When the two images are not the same width the comparison says `size-mismatch`
 and **no number is invented**, because resizing to force a score produces a
-figure made partly of interpolation.
+figure made partly of interpolation. A difference in height is not a mismatch:
+the rows are [aligned first](../decisions/pages-are-aligned-before-they-are-compared.md),
+as a text diff aligns lines.
 
 Scores carry a [noise floor](../decisions/no-masks-in-v1.md) until masks exist,
 so they are read as relative.

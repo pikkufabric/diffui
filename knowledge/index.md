@@ -64,7 +64,7 @@ knowledge/
     export-to-a-calendar.md     # type: note — one wish per note, never built unasked
 ```
 
-Only `index.md` ships with the template. **Create a section the turn you have a note to put
+Start a section only when there is a note for it. **Create a section the turn you have a note to put
 in it**, with its `index.md` in the same turn — an empty section is not a placeholder to fill
 in later, it is a section that shouldn't exist yet. The sections are load-bearing, not a
 style: a build starts only when `milestones/`, `entities/` or `decisions/` holds a note. Flat

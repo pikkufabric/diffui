@@ -12,6 +12,7 @@ test/
   scenarios/   one scenario per file   — <what-it-proves>.scenario.ts
   features/    one feature per file    — <domain>.scenarios.ts
   lib/         shared helpers, no declarations
+  unit/        plain unit tests (node:test), no server — <subject>.test.ts
 ```
 
 A feature imports its scenarios; a scenario names its steps by the string in
@@ -30,6 +31,19 @@ SCENARIO_ACTOR_SECRET=... bunx pikku scenario run local --no-browser   # API sce
 `--features` takes the **export name** (`pagesFeature`), not the display name.
 `pikku scenario list` prints every feature, scenario and its resolved data —
 run it after `pikku all`, which is what actually generates them.
+
+## Unit tests — the diff algorithm
+
+`unit/diff.test.ts` verifies `src/lib/diff.ts` without a server: the hand-written
+PNG decoder against `pngjs` for every colour type, scanline filter and chunk
+layout; the pixel score against counts worked out by hand from each fixture; and
+the row alignment (inserted, removed and shifted sections, symmetry, the
+fallback, the regions and the diff image). They run in about two seconds:
+
+```sh
+bun run test          # from the repo root
+bun test test/unit    # from packages/functions
+```
 
 ## The two tiers
 

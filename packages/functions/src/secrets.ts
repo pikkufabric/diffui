@@ -27,7 +27,7 @@ defineSecret({
  * `BETTER_AUTH_SECRET`, declared by hand.
  *
  * `auth.ts` says the CLI generates this declaration from the `pikkuBetterAuth`
- * call, and on this template it does not — a clean scaffold reports PKU951 for
+ * call, and here it does not — a clean `pikku all` reports PKU951 for
  * it on the very first `pikku all`. Declaring it here is what the error asks
  * for, and it is not cosmetic: the deploy manifest is how whoever provisions a
  * stage learns this has to be set, and an undeclared secret is one nobody is
