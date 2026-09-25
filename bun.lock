@@ -12,7 +12,6 @@
         "@pikku/ai-vercel": "^0.12.14",
         "@pikku/assistant-ui": "^0.12.13",
         "@pikku/better-auth": "^0.12.44",
-        "@pikku/cloudflare": "^0.12.25",
         "@pikku/core": "0.12.117",
         "@pikku/fetch": "0.12.12",
         "@pikku/kysely": "^0.13.27",
@@ -91,7 +90,6 @@
         "@pikku/addon-console": "^0.12.54",
         "@pikku/ai-vercel": "^0.12.14",
         "@pikku/better-auth": "^0.12.44",
-        "@pikku/cloudflare": "^0.12.25",
         "@pikku/core": "^0.12.117",
         "@pikku/kysely": "^0.13.27",
         "@pikku/schema-cfworker": "^0.12.7",
@@ -526,8 +524,6 @@
     "@pikku/bun-server": ["@pikku/bun-server@0.12.13", "", { "peerDependencies": { "@pikku/core": "^0.12.116", "@pikku/modelcontextprotocol": "^0.12.14" }, "optionalPeers": ["@pikku/modelcontextprotocol"] }, "sha512-yoW97ivH+oxae1Rub7styzqe6tL19896ICgUFrLVn0XV95MDNGQx7mcpfO6itJEfNytlEeXjTt6dr8Sstkl5RQ=="],
 
     "@pikku/cli": ["@pikku/cli@0.12.159", "", { "dependencies": { "@ai-sdk/openai": "^4.0.42", "@ai-sdk/openai-compatible": "^3.0.30", "@electric-sql/pglite": "^0.5.5", "@jridgewell/trace-mapping": "^0.3.31", "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.4", "@pikku/ai-vercel": "^0.12.14", "@pikku/better-auth": "^0.12.44", "@pikku/bun-server": "^0.12.13", "@pikku/code-edit": "^0.12.2", "@pikku/deploy": "^0.12.11", "@pikku/deploy-cloudflare": "^0.12.18", "@pikku/fetch": "^0.12.12", "@pikku/inspector": "^0.12.85", "@pikku/knowledge": "^0.12.15", "@pikku/kysely": "^0.13.27", "@pikku/migrator-sql": "^0.12.5", "@pikku/n8n-import": "^0.0.8", "@pikku/node-http-server": "^0.12.17", "@pikku/openapi-parser": "^0.12.21", "@pikku/schedule": "^0.12.8", "@pikku/skills": "^0.12.35", "@pikku/websocket": "^0.12.5", "@types/cookie": "^1.0.0", "@types/json-schema": "^7.0.15", "ai": "^7.0.66", "chalk": "^6.0.0", "chokidar": "^5.0.0", "esbuild": "~0.28.2", "istanbul-lib-instrument": "^6.0.3", "kysely": "^0.29.5", "open": "^11.0.1", "openapi-types": "^12.1.3", "path-to-regexp": "^8.4.2", "pg": "^8.23.0", "semver": "^7.8.5", "tinyglobby": "^0.2.17", "ts-json-schema-generator": "2.9.1-next.18", "tsx": "^4.23.12", "yaml": "^2.9.0", "zod": "^4.4.3", "zod-to-ts": "^2.1.0" }, "peerDependencies": { "@pikku/core": "^0.12.117", "@pikku/playwright": "^0.12.83", "@pikku/ws": "^0.12.10", "better-auth": "^1.7.5", "ws": "^8.21.3" }, "optionalPeers": ["@pikku/playwright", "@pikku/ws", "better-auth", "ws"], "bin": { "pikku": "dist/bin/pikku.js" } }, "sha512-vkJi6JLGjKqXhLe0HQ620CQ31nRjo5YKt9zH5zeDKXUHkIg3v6BdGXjDrr5lcPO2VCqUSeE9QR191iB6rLjOiQ=="],
-
-    "@pikku/cloudflare": ["@pikku/cloudflare@0.12.25", "", { "dependencies": { "kysely-d1": "^0.4.0" }, "peerDependencies": { "@pikku/core": "^0.12.117", "@pikku/kysely": "^0.13.25", "@pikku/modelcontextprotocol": "^0.12.14", "kysely": "^0.29.0" }, "optionalPeers": ["@pikku/modelcontextprotocol"] }, "sha512-pisNtAPhl/76b8TTP0voaJ3diGVTS/UIWVm+FYB1150FMicu5qbwGkluzkxkzBrSbcgL9jNzKlyIO49ucPD8Hg=="],
 
     "@pikku/code-edit": ["@pikku/code-edit@0.12.2", "", { "dependencies": { "typescript": "^6.0.3" } }, "sha512-iEUAX4gGr2M4eGIOpjyb944WQ08PDBsT7KR6nwXV7XvM+RszY6rVv56lZFLWRz3VedxtgoSjDxlls8gPiLThIQ=="],
 
@@ -1118,8 +1114,6 @@
     "json5": ["json5@2.2.3", "", { "bin": { "json5": "lib/cli.js" } }, "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg=="],
 
     "kysely": ["kysely@0.29.6", "", {}, "sha512-hHaB8C/rfzDDtr/t8YZwxAuPJTT0zHyaPoVzcXwDYhYNAgH/4sIfVhi/XLLIY+bL/FqaIJnjATDbi8ObSELmxg=="],
-
-    "kysely-d1": ["kysely-d1@0.4.0", "", { "peerDependencies": { "kysely": "*" } }, "sha512-wUcVvQNtm30OTfuo7Ad5vYJ1qHqPXOCZc+zWchVKNyuvqY3u8OuGw4gmUx1Ypdx2wRVFLHVQC9I7v0pTmF7Nkw=="],
 
     "lightningcss": ["lightningcss@1.33.0", "", { "dependencies": { "detect-libc": "^2.0.3" }, "optionalDependencies": { "lightningcss-android-arm64": "1.33.0", "lightningcss-darwin-arm64": "1.33.0", "lightningcss-darwin-x64": "1.33.0", "lightningcss-freebsd-x64": "1.33.0", "lightningcss-linux-arm-gnueabihf": "1.33.0", "lightningcss-linux-arm64-gnu": "1.33.0", "lightningcss-linux-arm64-musl": "1.33.0", "lightningcss-linux-x64-gnu": "1.33.0", "lightningcss-linux-x64-musl": "1.33.0", "lightningcss-win32-arm64-msvc": "1.33.0", "lightningcss-win32-x64-msvc": "1.33.0" } }, "sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA=="],
 
