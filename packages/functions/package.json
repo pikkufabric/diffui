@@ -20,7 +20,6 @@
     "@pikku/addon-console": "^0.12.54",
     "@pikku/ai-vercel": "^0.12.14",
     "@pikku/better-auth": "^0.12.47",
-    "@pikku/cloudflare": "^0.12.26",
     "@pikku/core": "^0.12.121",
     "@pikku/kysely": "^0.13.28",
     "@pikku/schema-cfworker": "^0.12.7",
