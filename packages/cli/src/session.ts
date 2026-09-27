@@ -66,3 +66,13 @@ export const loadSession = (server: string): StoredSession | null => {
 }
 
 export const sessionPath = sessionFile
+
+/** Forget the stored credential for one server. True if there was one. */
+export const clearSession = (server: string) => {
+  const all = readAll()
+  const key = normaliseServer(server)
+  if (!all[key]) return false
+  delete all[key]
+  writeFileSync(sessionFile(), `${JSON.stringify(all, null, 2)}\n`, { mode: 0o600 })
+  return true
+}

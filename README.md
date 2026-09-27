@@ -48,6 +48,26 @@ bun run prebuild && bun run dev
 
 The API comes up on `:3000` and the app on `:7104`.
 
+## Using it from a terminal
+
+Everything the web app does, the `diffui` CLI (`packages/cli`) does too — no
+browser needed at any step:
+
+```sh
+diffui signup --email me@example.com          # or: diffui login [--email …]
+diffui projects create shop --name "Shop"
+diffui init routes.json --project shop
+diffui push legacy-manifest.json --project shop
+diffui push mantine-manifest.json --project shop --branch mantine
+diffui overview
+diffui report  --project shop --branch mantine [--fail-over 5]
+diffui compare --project shop --branch mantine --route home --out ./diffs
+```
+
+`diffui help` lists every command. Read commands take `--json`, and
+`report --fail-over <percent>` exits 2 when any screen is further off than that,
+for CI. Passwords come from `$DIFFUI_PASSWORD`, stdin, or a hidden prompt.
+
 ## Where things are
 
 | | |

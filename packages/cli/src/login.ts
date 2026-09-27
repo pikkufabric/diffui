@@ -73,6 +73,24 @@ const mintApiKey = async (server: string, sessionToken: string) => {
   return { key: key.key, expiresAt: key.expiresAt ?? null, name }
 }
 
+/**
+ * Trade a better-auth session token for a stored machine key.
+ *
+ * Every way of signing in — the device flow, a password — ends here, so there
+ * is one answer to what the CLI keeps and where.
+ */
+export const storeKeyFor = async (server: string, sessionToken: string) => {
+  const apiKey = await mintApiKey(server, sessionToken)
+  const session: StoredSession = {
+    token: apiKey.key,
+    expiresAt: apiKey.expiresAt,
+    user: apiKey.name,
+  }
+  const file = saveSession(server, session)
+  process.stdout.write(`Signed in to ${server}.\nCredential stored at ${file} (0600).\n`)
+  return session
+}
+
 export const login = async (rawServer: string, options: { noBrowser?: boolean } = {}) => {
   const server = normaliseServer(rawServer)
 
@@ -125,15 +143,7 @@ export const login = async (rawServer: string, options: { noBrowser?: boolean } 
        * could not call a single diffui function. `POST /api/auth/api-key/create`
        * IS one of better-auth's own routes, which is why the bearer works here
        * and nowhere else. What gets stored is the key. */
-      const apiKey = await mintApiKey(server, payload.access_token)
-      const session: StoredSession = {
-        token: apiKey.key,
-        expiresAt: apiKey.expiresAt,
-        user: apiKey.name,
-      }
-      const file = saveSession(server, session)
-      process.stdout.write(`Signed in to ${server}.\nCredential stored at ${file} (0600).\n`)
-      return session
+      return storeKeyFor(server, payload.access_token)
     }
 
     const error = payload.error
