@@ -30,7 +30,7 @@ Projects
 Capturing
   diffui init    <routes.json>   --project <project> [--dry-run]
   diffui push    <manifest.json> --project <project> [--branch <key>]
-                 [--viewport <key>] [--route <glob>] [--baseline] [--dry-run]
+                 [--viewport <key>] [--route <glob>] [--baseline] [--review] [--dry-run]
 
 Reading
   diffui overview                       every project's rebuilds at a glance
@@ -40,6 +40,10 @@ Reading
   diffui report    --project <project> --branch <key> [--status <status>] [--fail-over <percent>]
   diffui compare   --project <project> --branch <key> --route <key>
                    [--state <key>] [--viewport <key>] [--out <dir>]
+
+Reviewing
+  diffui review    --project <project> --branch <key> [--route <key>] [--limit <n>] [--force]
+                   have a vision model say what differs on each flagged screen
 
   <project>   a project's slug or id
   --server    defaults to $DIFFUI_SERVER, else http://localhost:3300
@@ -227,6 +231,24 @@ const main = async () => {
         json,
       )
 
+    case 'review': {
+      const limit = optional('limit')
+      if (limit !== undefined && !/^[1-9]\d*$/.test(limit)) {
+        throw new Error('`--limit` is a whole number of screens, e.g. 25.')
+      }
+      return commands.review(
+        server,
+        positionals[0] ?? project(),
+        {
+          branch: asString(flags.branch, 'branch'),
+          ...(optional('route') ? { route: optional('route') } : {}),
+          ...(limit !== undefined ? { limit: Number(limit) } : {}),
+          force: flags.force === true,
+        },
+        json,
+      )
+    }
+
     case 'init':
       if (!positionals[0]) throw new Error('`diffui init` needs a routes file.')
       await init(server, positionals[0], {
@@ -235,9 +257,9 @@ const main = async () => {
       })
       return
 
-    case 'push':
+    case 'push': {
       if (!positionals[0]) throw new Error('`diffui push` needs a manifest file.')
-      await push(server, positionals[0], {
+      const pushed = await push(server, positionals[0], {
         project: flags['dry-run'] === true ? project() : await projectId(),
         ...(typeof flags.branch === 'string' ? { branch: flags.branch } : {}),
         ...(typeof flags.viewport === 'string' ? { viewport: flags.viewport } : {}),
@@ -245,7 +267,19 @@ const main = async () => {
         dryRun: flags['dry-run'] === true,
         makeBaseline: flags.baseline === true,
       })
+      /* Opt-in: a review sends screenshots to a model and costs money, so a
+         push never starts one unless asked. Legacy pushes have nothing to
+         review — there is no rebuild in them. */
+      if (flags.review === true && !flags['dry-run'] && 'side' in pushed) {
+        if (pushed.side === 'new' && pushed.branch && pushed.pushed > 0) {
+          process.stdout.write('\n')
+          await commands.review(server, project(), { branch: pushed.branch }, false)
+        } else if (pushed.side === 'legacy') {
+          process.stdout.write('\n--review skipped: a legacy push has no rebuild to review.\n')
+        }
+      }
       return
+    }
 
     case 'help':
     case '--help':

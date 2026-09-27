@@ -295,7 +295,11 @@ const chunk = (type: string, data: Uint8Array): Uint8Array => {
 }
 
 /** Encode 8-bit RGBA as a non-interlaced PNG (filter 0, zlib IDAT). */
-const encodePng = async (width: number, height: number, data: Uint8Array): Promise<Uint8Array> => {
+export const encodePng = async (
+  width: number,
+  height: number,
+  data: Uint8Array,
+): Promise<Uint8Array> => {
   const stride = width * 4
   const raw = new Uint8Array((stride + 1) * height)
   for (let y = 0; y < height; y++) {

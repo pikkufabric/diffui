@@ -171,5 +171,5 @@ export const push = async (
   }
 
   process.stdout.write(`Pushed ${pushed} shots.\n`)
-  return { pushed, skipped: manifest.shots.length - selected.length }
+  return { pushed, skipped: manifest.shots.length - selected.length, side, branch }
 }

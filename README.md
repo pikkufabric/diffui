@@ -62,11 +62,18 @@ diffui push mantine-manifest.json --project shop --branch mantine
 diffui overview
 diffui report  --project shop --branch mantine [--fail-over 5]
 diffui compare --project shop --branch mantine --route home --out ./diffs
+diffui review  --project shop --branch mantine   # a model says what differs
 ```
 
 `diffui help` lists every command. Read commands take `--json`, and
 `report --fail-over <percent>` exits 2 when any screen is further off than that,
 for CI. Passwords come from `$DIFFUI_PASSWORD`, stdin, or a hidden prompt.
+
+`review` (or `push --review`) has a vision model read each flagged screen and
+list what differs. It needs an AI gateway: Fabric provides one, and locally
+`pikku dev` uses `OPENAI_BASE_URL` / `OPENAI_API_KEY` from `.env`. The pixel
+score never changes because of it — see
+`knowledge/decisions/a-model-reads-what-the-pixels-flag.md`.
 
 ## Where things are
 

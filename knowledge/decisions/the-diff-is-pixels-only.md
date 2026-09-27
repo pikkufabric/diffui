@@ -23,6 +23,11 @@ parse both sides, and the legacy side is exactly the app nobody wants to touch.
 you WHAT is missing.** A missing menu item in a dense table is well under 1% and
 will never surface as the worst screen on the list.
 
+On request, a vision model reads a flagged screen and names what differs —
+see [a model reads what the pixels flag](a-model-reads-what-the-pixels-flag.md).
+That is a second opinion stored beside the score; the score itself stays
+pixels only.
+
 So "what is left to build" is answered by **coverage**, not by the score:
 a route where legacy has a path and a branch has no shot. Those are two separate
 questions and the report must answer them separately rather than hoping a

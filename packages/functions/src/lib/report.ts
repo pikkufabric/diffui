@@ -52,15 +52,21 @@ export const buildReport = async (kysely: Kysely<DB>, projectId: string, branchI
 
   const comparisons = await kysely
     .selectFrom('comparison')
+    /* The model's reading, if one has been asked for. It rides along with the
+       row and never changes the pixel numbers or the order. */
+    .leftJoin('comparisonReview', 'comparisonReview.comparisonId', 'comparison.comparisonId')
     .select([
-      'baselineShotId',
-      'targetShotId',
-      'status',
-      'diffPixels',
-      'comparedPixels',
-      'diffRatio',
+      'comparison.baselineShotId',
+      'comparison.targetShotId',
+      'comparison.status',
+      'comparison.diffPixels',
+      'comparison.comparedPixels',
+      'comparison.diffRatio',
+      'comparisonReview.status as reviewStatus',
+      'comparisonReview.verdict as reviewVerdict',
+      'comparisonReview.summary as reviewSummary',
     ])
-    .where('projectId', '=', projectId)
+    .where('comparison.projectId', '=', projectId)
     .execute()
 
   const at = (row: { routeId: string; stateId: string; viewportId: string }) =>
@@ -90,6 +96,11 @@ export const buildReport = async (kysely: Kysely<DB>, projectId: string, branchI
       diffPixels: null as number | null,
       comparedPixels: null as number | null,
       diffRatio: null as number | null,
+      review: null as {
+        status: 'done' | 'failed'
+        verdict: 'matches' | 'cosmetic' | 'functional' | null
+        summary: string | null
+      } | null,
     }
 
     if (comparison) {
@@ -99,6 +110,13 @@ export const buildReport = async (kysely: Kysely<DB>, projectId: string, branchI
         diffPixels: comparison.diffPixels,
         comparedPixels: comparison.comparedPixels,
         diffRatio: comparison.diffRatio,
+        review: comparison.reviewStatus
+          ? {
+              status: comparison.reviewStatus,
+              verdict: comparison.reviewVerdict,
+              summary: comparison.reviewSummary,
+            }
+          : null,
       }
     }
 

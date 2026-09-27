@@ -307,6 +307,15 @@ export const shots = async (
   )
 }
 
+/** The model's verdict and its one-line summary, or why there is none. */
+const reviewCell = (
+  review: { status: 'done' | 'failed'; verdict: string | null; summary: string | null } | null,
+) => {
+  if (!review) return ''
+  if (review.status === 'failed') return 'review failed'
+  return `${review.verdict}: ${review.summary ?? ''}`
+}
+
 const REPORT_STATUSES = [
   'identical',
   'different',
@@ -335,6 +344,7 @@ export const report = async (
       viewportKey: string
       status: string
       diffRatio: number | null
+      review: { status: 'done' | 'failed'; verdict: string | null; summary: string | null } | null
     }>
     summary: Summary
   }>(server, 'projectReport', { projectId, branchKey: options.branch })
@@ -347,8 +357,15 @@ export const report = async (
     /* Worst first: the report is read to find what to fix next. */
     const sorted = [...rows].sort((a, b) => (b.diffRatio ?? -1) - (a.diffRatio ?? -1))
     printTable(
-      ['ROUTE', 'STATE', 'RESOLUTION', 'STATUS', 'DIFF'],
-      sorted.map((r) => [r.routeKey, r.stateKey, r.viewportKey, r.status, percent(r.diffRatio)]),
+      ['ROUTE', 'STATE', 'RESOLUTION', 'STATUS', 'DIFF', 'REVIEW'],
+      sorted.map((r) => [
+        r.routeKey,
+        r.stateKey,
+        r.viewportKey,
+        r.status,
+        percent(r.diffRatio),
+        reviewCell(r.review),
+      ]),
     )
     process.stdout.write(`\n${result.branch.key}: ${summaryLine(result.summary)}\n`)
   }
@@ -390,6 +407,20 @@ export const compare = async (
       baseline: { y: number; height: number }
       target: { y: number; height: number }
     }>
+    review: {
+      status: 'done' | 'failed'
+      verdict: string | null
+      summary: string | null
+      findings: Array<{
+        kind: string
+        severity: string
+        region: number | null
+        description: string
+      }>
+      error: string | null
+      model: string
+      reviewedAt: string
+    } | null
   }>(server, 'routeComparison', {
     projectId,
     branchKey: options.branch,
@@ -445,9 +476,57 @@ export const compare = async (
       )
     }
   }
+  if (result.review) {
+    const review = result.review
+    process.stdout.write(`\nReview (${review.model}, ${review.reviewedAt}):\n`)
+    if (review.status === 'failed') {
+      process.stdout.write(`  failed: ${review.error}\n`)
+    } else {
+      process.stdout.write(`  ${review.verdict}: ${review.summary}\n`)
+      /* Most severe first: the review is read to decide what to fix. */
+      const order = { high: 0, medium: 1, low: 2 } as Record<string, number>
+      for (const f of [...review.findings].sort(
+        (a, b) => order[a.severity]! - order[b.severity]!,
+      )) {
+        const where = f.region === null ? '' : ` [region ${f.region}]`
+        process.stdout.write(
+          `  - ${f.severity.padEnd(6)} ${f.kind.padEnd(12)} ${f.description}${where}\n`,
+        )
+      }
+    }
+  } else if (result.status === 'different') {
+    process.stdout.write(
+      `\nNot reviewed yet. \`diffui review --project ${ref} --branch ${options.branch} --route ${options.route}\` asks a model what differs.\n`,
+    )
+  }
   process.stdout.write('\n')
   for (const [name, url] of Object.entries(images)) {
     if (!url) continue
     process.stdout.write(`${name.padEnd(8)} ${saved[name] ?? url}\n`)
   }
+}
+
+export const review = async (
+  server: string,
+  ref: string,
+  options: { branch: string; route?: string; limit?: number; force?: boolean },
+  json: boolean,
+) => {
+  const { projectId } = await resolveProject(server, ref)
+  const result = await rpc<{ runId: string | null; screens: number }>(server, 'requestReview', {
+    projectId,
+    branchKey: options.branch,
+    ...(options.route ? { routeKey: options.route } : {}),
+    ...(options.limit !== undefined ? { limit: options.limit } : {}),
+    ...(options.force ? { force: true } : {}),
+  })
+  if (json) return printJson(result)
+  if (!result.runId) {
+    process.stdout.write('Every flagged screen in scope already has a current review.\n')
+    return
+  }
+  process.stdout.write(
+    `Reviewing ${result.screens} flagged screen${result.screens === 1 ? '' : 's'} (run ${result.runId}).\n` +
+      `Verdicts appear in \`diffui report --project ${ref} --branch ${options.branch}\` as they land.\n`,
+  )
 }

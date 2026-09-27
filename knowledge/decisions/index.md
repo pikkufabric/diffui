@@ -9,6 +9,7 @@ tags: [okf]
 
 - [Legacy is the only baseline](legacy-is-the-only-baseline.md) — branches are never compared to each other
 - [The diff is pixels only](the-diff-is-pixels-only.md) — no DOM or semantic comparison
+- [A model reads what the pixels flag](a-model-reads-what-the-pixels-flag.md) — a second opinion beside the score, never changing it
 - [Pages are aligned before they are compared](pages-are-aligned-before-they-are-compared.md) — a different height is aligned, a different width refused
 - [No masks in v1](no-masks-in-v1.md) — and what that costs until they arrive
 - [Images never pass through the API](images-never-pass-through-the-api.md) — direct upload
@@ -23,6 +24,7 @@ Sub-sections:
 - [design](design/index.md) — a rule about how the app looks and behaves
 - [security](security/index.md) — a rule about who may do what
 - [A browser step waits for hydration](a-browser-step-waits-for-hydration.md) — Steps that act on the page wait for React to attach, because a click on server-rendered HTML succeeds and does nothing
+- [A model reads what the pixels flag](a-model-reads-what-the-pixels-flag.md) — A vision model says what differs on each flagged screen. It sits beside the pixel score and never changes it.
 - [Images never pass through the API](images-never-pass-through-the-api.md) — The CLI uploads straight to storage with a presigned URL, then registers the shot.
 - [Legacy is the only baseline](legacy-is-the-only-baseline.md) — Branches are scored against legacy and never against each other.
 - [No masks in v1](no-masks-in-v1.md) — Captures are unmasked, so every score carries a noise floor. Legacy still runs, so this is reversible.

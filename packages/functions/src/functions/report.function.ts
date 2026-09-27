@@ -51,6 +51,14 @@ export const ProjectReportOutput = z.object({
       diffPixels: z.number().nullable(),
       comparedPixels: z.number().nullable(),
       diffRatio: z.number().nullable(),
+      /** A vision model's reading of a flagged screen, once one was requested. */
+      review: z
+        .object({
+          status: z.enum(['done', 'failed']),
+          verdict: z.enum(['matches', 'cosmetic', 'functional']).nullable(),
+          summary: z.string().nullable(),
+        })
+        .nullable(),
     }),
   ),
   /**
@@ -137,6 +145,28 @@ export const RouteComparisonOutput = z.object({
       target: z.object({ y: z.number(), height: z.number() }),
     }),
   ),
+  /**
+   * A vision model's reading of this comparison, if one was requested. A
+   * finding's `region` indexes `regions` above; null means page-wide.
+   */
+  review: z
+    .object({
+      status: z.enum(['done', 'failed']),
+      verdict: z.enum(['matches', 'cosmetic', 'functional']).nullable(),
+      summary: z.string().nullable(),
+      findings: z.array(
+        z.object({
+          kind: z.enum(['missing', 'added', 'text-changed', 'layout', 'style', 'noise']),
+          severity: z.enum(['high', 'medium', 'low']),
+          region: z.number().nullable(),
+          description: z.string(),
+        }),
+      ),
+      error: z.string().nullable(),
+      model: z.string(),
+      reviewedAt: z.string(),
+    })
+    .nullable(),
 })
 
 /**
@@ -234,6 +264,7 @@ export const routeComparison = pikkuFunc({
         ? await kysely
             .selectFrom('comparison')
             .select([
+              'comparisonId',
               'status',
               'diffPixels',
               'comparedPixels',
@@ -245,6 +276,14 @@ export const routeComparison = pikkuFunc({
             .where('targetShotId', '=', target.shotId)
             .executeTakeFirst()
         : undefined
+
+    const review = comparison
+      ? await kysely
+          .selectFrom('comparisonReview')
+          .select(['status', 'verdict', 'summary', 'findings', 'error', 'model', 'createdAt'])
+          .where('comparisonId', '=', comparison.comparisonId)
+          .executeTakeFirst()
+      : undefined
 
     const expires = new Date(Date.now() + 60 * 60 * 1000)
     const sign = (bucket: 'shots' | 'diffs', contentKey: string) =>
@@ -276,6 +315,17 @@ export const routeComparison = pikkuFunc({
         ? { assetUrl: await sign('diffs', comparison.diffContentKey) }
         : null,
       regions: comparison ? JSON.parse(comparison.regions) : [],
+      review: review
+        ? {
+            status: review.status,
+            verdict: review.verdict,
+            summary: review.summary,
+            findings: JSON.parse(review.findings),
+            error: review.error,
+            model: review.model,
+            reviewedAt: review.createdAt,
+          }
+        : null,
     }
   },
 })
