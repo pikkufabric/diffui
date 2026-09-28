@@ -11,6 +11,7 @@ import { init } from './init.js'
 import { login } from './login.js'
 import { passwordLogin, signup } from './password.js'
 import { push } from './push.js'
+import { installSkill } from './skill.js'
 import { clearSession, loadSession, normaliseServer, sessionPath } from './session.js'
 
 const USAGE = `diffui — visual regression against a legacy app
@@ -44,6 +45,9 @@ Reading
 Reviewing
   diffui review    --project <project> --branch <key> [--route <key>] [--limit <n>] [--force]
                    have a vision model say what differs on each flagged screen
+
+Agents
+  diffui skill install [--dir <path>]   copy the diffui skill into .claude/skills/diffui
 
   <project>   a project's slug or id
   --server    defaults to $DIFFUI_SERVER, else http://localhost:3300
@@ -280,6 +284,13 @@ const main = async () => {
       }
       return
     }
+
+    case 'skill':
+      if (positionals[0] !== 'install') {
+        throw new Error('Try `diffui skill install [--dir <path>]`.')
+      }
+      installSkill({ ...(optional('dir') ? { dir: optional('dir') } : {}) })
+      return
 
     case 'help':
     case '--help':

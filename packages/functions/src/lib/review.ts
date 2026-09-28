@@ -20,10 +20,19 @@ import type { AgentRunnerService } from '@pikku/core/services'
 import { decodePng, encodePng, type Decoded, type DiffRegion } from './diff.js'
 
 /**
- * Telling a missing control from a re-flowed one is judgement, and a wrong
- * review costs an engineer more than the call does.
+ * The model that reads the screenshots. It has to see images and return
+ * schema-shaped JSON, and it must be one the gateway serves: the part after the
+ * slash is sent to it as the model name.
+ *
+ * Gemini Flash, because on Fabric's gateway (ai.pikkufabric.com) it is the
+ * cheapest model that does both. Tested there on 2026-09-28: Gemini Flash and
+ * Pro and GPT-5 read the screenshots; DeepSeek V4.1 Flash and GLM are text-only
+ * through it; Claude and Kimi failed on their accounts' balance. On a real
+ * Orders page Flash found the missing button, the renamed column and the row
+ * height, but not a button's shade or a changed timestamp — raise this to
+ * `google/gemini-pro-latest` if reviews miss things that matter.
  */
-export const REVIEW_MODEL = 'anthropic/claude-opus-5'
+export const REVIEW_MODEL = 'google/gemini-flash-latest'
 
 /**
  * Bump when the prompt or the schema changes in a way that makes old reviews

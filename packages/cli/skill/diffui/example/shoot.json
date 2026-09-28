@@ -1,0 +1,85 @@
+{
+  "project": "shop",
+  "viewports": ["desktop", "mobile"],
+  "sides": {
+    "legacy": {
+      "baseUrl": "https://shop.example.com",
+      "loader": ".page-loader",
+      "auth": {
+        "kind": "form",
+        "path": "/login",
+        "user": "#email",
+        "pass": "#password",
+        "submit": "button[type=submit]",
+        "settled": "[data-app-ready]"
+      },
+      "discover": {
+        "skip": ["^delete account$", "^cancel subscription$"]
+      }
+    },
+    "new": {
+      "baseUrl": "http://localhost:7104",
+      "branch": "mantine",
+      "auth": {
+        "kind": "form",
+        "path": "/app/auth/login",
+        "user": "input[name=email]",
+        "pass": "input[name=password]",
+        "submit": "button[type=submit]",
+        "settled": "nav"
+      },
+      "readOnly": {
+        "allow": ["/rpc/list", "/rpc/get"]
+      }
+    }
+  },
+  "screens": [
+    {
+      "key": "orders",
+      "label": "Orders",
+      "legacyPath": "/orders",
+      "newPath": "/app/orders",
+      "states": [
+        {
+          "key": "default",
+          "label": "Orders list"
+        },
+        {
+          "key": "new-order",
+          "label": "New order dialog",
+          "open": {
+            "legacy": ["role=button[name=\"New order\"]"],
+            "new": ["role=button[name=\"New order\"]"]
+          },
+          "settled": "role=dialog"
+        },
+        {
+          "key": "row-menu",
+          "label": "Row actions menu",
+          "open": {
+            "legacy": ["hover tbody tr:has(td) >> nth=0", "role=button[name=\"Actions\"]"],
+            "new": ["hover tbody tr:has(td) >> nth=0", "role=button[name=\"Row actions\"]"]
+          },
+          "settled": "role=menu"
+        }
+      ]
+    },
+    {
+      "key": "orders.detail",
+      "label": "Order detail",
+      "legacyPath": "/orders/10421",
+      "newPath": "/app/orders/10421"
+    },
+    {
+      "key": "settings.billing",
+      "label": "Billing settings",
+      "legacyPath": "/settings/billing"
+    },
+    {
+      "key": "onboarding",
+      "label": "Onboarding checklist",
+      "legacyAbsent": true,
+      "newPath": "/app/onboarding"
+    }
+  ]
+}

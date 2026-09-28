@@ -69,6 +69,13 @@ diffui review  --project shop --branch mantine   # a model says what differs
 `report --fail-over <percent>` exits 2 when any screen is further off than that,
 for CI. Passwords come from `$DIFFUI_PASSWORD`, stdin, or a hidden prompt.
 
+In the repo doing the rebuild, `diffui skill install` adds the diffui skill to
+`.claude/skills/diffui/`. It gives a coding agent the whole loop: a shoot config
+listing every screen and dialog, a Playwright shooter that signs in without
+writing credentials anywhere, a check that refuses stale or redirected captures
+before they are pushed, and the traps that cost past migrations an afternoon
+each. The skill ships from `packages/cli/skill/diffui/`.
+
 `review` (or `push --review`) has a vision model read each flagged screen and
 list what differs. It needs an AI gateway: Fabric provides one, and locally
 `pikku dev` uses `OPENAI_BASE_URL` / `OPENAI_API_KEY` from `.env`. The pixel

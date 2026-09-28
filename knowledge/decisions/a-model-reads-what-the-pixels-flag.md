@@ -48,9 +48,13 @@ model vendor. A stage with no gateway has no reviews, and says so. There is no
 per-organisation switch yet. Until there is, whether a stage can review is
 whether it has a gateway.
 
-Each review is one call to a large vision model with up to seven images, so it
-costs roughly a few cents a screen. That is why it is opt-in and capped rather
-than automatic on every push.
+Each review is one call to a vision model with up to eight images: the two
+screenshots, the diff and a crop of each large region. The model is Gemini Flash
+(`REVIEW_MODEL` in `lib/review.ts`), chosen as the cheapest model on Fabric's
+gateway that both reads images and returns structured output. It catches missing
+controls and renamed labels, and can miss small shade changes; Gemini Pro is the
+step up when that matters. Reviews stay opt-in and capped all the same: it is
+still a paid call, and still sends screenshots out.
 
 ## What this rules out
 
